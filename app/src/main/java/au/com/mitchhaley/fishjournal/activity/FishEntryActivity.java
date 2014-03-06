@@ -138,6 +138,7 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
             case 102:
                 i = new Intent(this, FishListActivity.class);
                 i.putExtra(NAV_DRAWER_POSITION, 1);
+
                 startActivity(i);
                 break;
             case 103:
