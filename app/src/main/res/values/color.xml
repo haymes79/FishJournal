@@ -1,0 +1,8 @@
+<resources>
+
+    <color name="fishEntryBackground">#0099CC</color>
+    <color name="fishListBackground">#669900</color>
+    <color name="tripListBackground">#FF8800</color>
+    <color name="tripEntryBackground">#CC0000</color>
+</resources>
+
