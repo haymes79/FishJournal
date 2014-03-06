@@ -125,13 +125,18 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
     
     @Override
     protected void onNavItemSelected(int id) {
+
+        Intent i;
         switch ((int)id) {
             case 100:
                 break;
             case 101:
+                i = new Intent(this, FishEntryActivity.class);
+                i.putExtra(NAV_DRAWER_POSITION, 1);
+                startActivity(i);
                 break;
             case 102:
-                Intent i = new Intent(this, FishListActivity.class);
+                i = new Intent(this, FishListActivity.class);
                 i.putExtra(NAV_DRAWER_POSITION, 1);
                 startActivity(i);
                 break;
