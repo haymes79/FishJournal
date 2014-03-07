@@ -16,10 +16,15 @@ import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
+
+import java.util.Date;
+
 import au.com.mitchhaley.fishjournal.R;
 import au.com.mitchhaley.fishjournal.activity.FishEntryActivity;
 import au.com.mitchhaley.fishjournal.contentprovider.FishEntryContentProvider;
 import au.com.mitchhaley.fishjournal.db.FishEntryTable;
+import au.com.mitchhaley.fishjournal.picker.DateTimePicker;
 
 public class FishListFragment extends ListFragment implements
 		LoaderManager.LoaderCallbacks<Cursor> {
@@ -76,13 +81,31 @@ public class FishListFragment extends ListFragment implements
 		// Fields from the database (projection)
 		// Must include the _id column for the adapter to work
 		String[] from = new String[] { FishEntryTable.COLUMN_SPECIES,
-				FishEntryTable.COLUMN_SIZE, FishEntryTable.COLUMN_WEIGHT };
+				FishEntryTable.COLUMN_SIZE, FishEntryTable.COLUMN_WEIGHT, FishEntryTable.COLUMN_DATETIME };
 		// Fields on the UI to which we map
-		int[] to = new int[] { R.id.label, R.id.sizeValue, R.id.weightValue };
+		int[] to = new int[] { R.id.label, R.id.sizeValue, R.id.weightValue, R.id.date};
 
 		getLoaderManager().initLoader(0, null, this);
 		adapter = new SimpleCursorAdapter(getActivity(), R.layout.fishlist_entry_row,
 				null, from, to, 0);
+
+        adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+
+            public boolean setViewValue(View aView, Cursor aCursor, int aColumnIndex) {
+
+                if (aColumnIndex == 4) {
+                    long dateTimeLong = aCursor.getLong(aColumnIndex);
+                    TextView textView = (TextView) aView;
+                    Date date = new Date();
+                    date.setTime(dateTimeLong);
+
+                    textView.setText(DateTimePicker.convertDate(date, "dd/MM/yyyy hh:mm"));
+                    return true;
+                }
+
+                return false;
+            }
+        });
 
 		setListAdapter(adapter);
 	}
@@ -92,7 +115,7 @@ public class FishListFragment extends ListFragment implements
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		String[] projection = { FishEntryTable.PRIMARY_KEY,
 				FishEntryTable.COLUMN_SPECIES, FishEntryTable.COLUMN_SIZE,
-				FishEntryTable.COLUMN_WEIGHT };
+				FishEntryTable.COLUMN_WEIGHT, FishEntryTable.COLUMN_DATETIME  };
 		CursorLoader cursorLoader = new CursorLoader(getActivity(),
 				FishEntryContentProvider.FISHES_URI, projection, null, null,null);
 		return cursorLoader;

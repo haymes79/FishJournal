@@ -25,9 +25,6 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
 
     private SectionFragmentPagerAdapter mSectionsPagerAdapter;
 
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
     private ViewPager mViewPager;
 
     private FishDetailsFragment fishDetailsFragment;
@@ -138,7 +135,6 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
             case 102:
                 i = new Intent(this, FishListActivity.class);
                 i.putExtra(NAV_DRAWER_POSITION, 1);
-
                 startActivity(i);
                 break;
             case 103:

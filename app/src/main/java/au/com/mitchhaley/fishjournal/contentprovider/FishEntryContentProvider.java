@@ -180,7 +180,7 @@ public class FishEntryContentProvider extends ContentProvider {
         private void checkColumns(String[] projection) {
             String[] available = { FishEntryTable.PRIMARY_KEY, FishEntryTable.COLUMN_SIZE, FishEntryTable.COLUMN_CONDITIONS,
                     FishEntryTable.COLUMN_NOTES, FishEntryTable.COLUMN_SPECIES, FishEntryTable.COLUMN_TEMPERATURE,
-                    FishEntryTable.COLUMN_WEIGHT};
+                    FishEntryTable.COLUMN_WEIGHT, FishEntryTable.COLUMN_DATETIME};
             if (projection != null) {
                 HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
                 HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));

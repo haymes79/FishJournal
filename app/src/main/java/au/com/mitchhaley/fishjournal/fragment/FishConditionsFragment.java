@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
@@ -23,15 +22,19 @@ public class FishConditionsFragment extends Fragment
 {
     private final String[] tideValues = {"NA", "High", "Low"};
     
-    private final String[] moonValues = {"NA", "New Moon", "First Quarter", "Full Moon", "Last Quarter"};
-
-    private final int[] moonImages = {R.drawable.sunny, R.drawable.cloudy, R.drawable.tstorm, R.drawable.light_rain, R.drawable.snow};
+    private final String[] moonValues = {"New Moon", "First Quarter", "Full Moon", "Last Quarter"};
 
     private final String[] conditionValues = {"Sunny", "Cloudy", "Storms", "Light Rain", "Snow"};
+
+    private final int[] moonImages = {R.drawable.new_moon, R.drawable.first_quarter_moon, R.drawable.full_moon, R.drawable.last_quarter_moon};
 
     private final int[] conditionImages = {R.drawable.sunny, R.drawable.cloudy, R.drawable.tstorm, R.drawable.light_rain, R.drawable.snow};
 
     private Spinner mConditionSpinner;
+
+    private Spinner mMoonSpinner;
+
+    private Spinner mTideSpinner;
     
     private TextView mTemperatureSeekBarValue;  
 
@@ -59,25 +62,44 @@ public class FishConditionsFragment extends Fragment
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                // TODO Auto-generated method stub
+
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                // TODO Auto-generated method stub
+
             }
         });
 
         mConditionSpinner = (Spinner) view.findViewById(R.id.spinnerConditions);
-        mConditionSpinner.setAdapter(new MyAdapter(getActivity(), R.layout.conditions_spinner_row, conditionValues));
-        
+        MyAdapter conditionsAdapter = new MyAdapter(getActivity(), R.layout.image_spinner_row, conditionValues);
+        conditionsAdapter.setImages(conditionImages);
+        mConditionSpinner.setAdapter(conditionsAdapter);
+
+        mTideSpinner = (Spinner) view.findViewById(R.id.tideSpinner);
+        mTideSpinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, tideValues));
+
+        mMoonSpinner = (Spinner) view.findViewById(R.id.spinnerMoon);
+        MyAdapter moonAdapter = new MyAdapter(getActivity(), R.layout.image_spinner_row, moonValues);
+        moonAdapter.setImages(moonImages);
+        mMoonSpinner.setAdapter(moonAdapter);
+
+
         return view;
     }
 
     class MyAdapter extends ArrayAdapter<String> {
 
-        public MyAdapter(Context context, int textViewResourceId, String[] objects) {
-            super(context, textViewResourceId, objects);
+        String[] values;
+        int[] images;
+
+        public MyAdapter(Context context, int textViewResourceId, String[] values) {
+            super(context, textViewResourceId, values);
+            this.values = values;
+        }
+
+        public void setImages(int[] images) {
+            this.images = images;
         }
 
         @Override
@@ -93,12 +115,12 @@ public class FishConditionsFragment extends Fragment
         public View getCustomView(int position, View convertView, ViewGroup parent) {
 
             LayoutInflater inflater = getLayoutInflater(new Bundle());
-            View row=inflater.inflate(R.layout.conditions_spinner_row, parent, false);
-            TextView label=(TextView) row.findViewById(R.id.conditionTextValue);
-            label.setText(conditionValues[position]);
+            View row=inflater.inflate(R.layout.image_spinner_row, parent, false);
+            TextView label=(TextView) row.findViewById(R.id.rowTextValue);
+            label.setText(values[position]);
 
-            ImageView icon=(ImageView) row.findViewById(R.id.conditionImage);
-            icon.setImageResource(conditionImages[position]);
+            ImageView icon=(ImageView) row.findViewById(R.id.rowImage);
+            icon.setImageResource(images[position]);
 
             return row;
         }
@@ -110,5 +132,13 @@ public class FishConditionsFragment extends Fragment
     
     public String getTemperature() {
     	return mTemperatureSeekBarValue.getText().toString();
-    }    
+    }
+
+    public String getMoon() {
+        return mMoonSpinner.getSelectedItem().toString();
+    }
+
+    public String geTide() {
+        return mTideSpinner.getSelectedItem().toString();
+    }
 }

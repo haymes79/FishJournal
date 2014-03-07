@@ -20,6 +20,9 @@ public class FishEntryTable {
     public static final String COLUMN_WEIGHT = "weight";
     public static final String COLUMN_NOTES = "notes";
 
+    public static final String COLUMN_MOON = "moon";
+    public static final String COLUMN_TIDE = "tide";
+
     private static final String DATABASE_CREATE = "create table "
             + TABLE_FISH_ENTRY
             + " ("
@@ -30,6 +33,8 @@ public class FishEntryTable {
             + COLUMN_SIZE  + " text, "
             + COLUMN_WEIGHT  + " text, "
             + COLUMN_NOTES  + " text, "
+            + COLUMN_MOON  + " text, "
+            + COLUMN_TIDE  + " text, "
             + COLUMN_DATETIME  + " integer"
             + ");";
 

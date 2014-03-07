@@ -24,10 +24,13 @@ public class FishEntryContentHelper {
 
 		String weight = fishDetailsFragment.getWeight();
 		String size = fishDetailsFragment.getSize();
-		
+
+        String tide = fishConditionsFragment.geTide();
+        String moon = fishConditionsFragment.getMoon();
+
 		String species = fishTypeFragment.getFishSpecies();
 		
-		long dateTime = Calendar.getInstance().getTimeInMillis();
+		long dateTime = fishDetailsFragment.getSelectedDateTime();
 		
         ContentValues values = new ContentValues();
         values.put(FishEntryTable.COLUMN_CONDITIONS, condition);
