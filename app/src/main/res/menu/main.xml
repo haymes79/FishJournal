@@ -1,12 +1,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
-        android:id="@+id/fish_entry_save"
+        android:id="@+id/save"
         android:orderInCategory="100"
         android:showAsAction="always"
         android:title="Save"/>
     <item
-        android:id="@+id/fish_entry_delete"
+        android:id="@+id/delete"
         android:title="Delete">
     </item>
 

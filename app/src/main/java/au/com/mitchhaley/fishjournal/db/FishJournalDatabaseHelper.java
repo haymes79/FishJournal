@@ -20,6 +20,7 @@ public class FishJournalDatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase database) {
         FishEntryTable.onCreate(database);
+        TripEntryTable.onCreate(database);
     }
 
     // Method is called during an upgrade of the database,
@@ -28,6 +29,7 @@ public class FishJournalDatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase database, int oldVersion,
                           int newVersion) {
         FishEntryTable.onUpgrade(database, oldVersion, newVersion);
+        TripEntryTable.onUpgrade(database, oldVersion, newVersion);
     }
 
 }

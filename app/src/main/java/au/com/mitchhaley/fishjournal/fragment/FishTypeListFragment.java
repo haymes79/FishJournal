@@ -2,6 +2,7 @@ package au.com.mitchhaley.fishjournal.fragment;
 
 
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
@@ -15,6 +16,9 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+
+import java.util.Arrays;
+
 import au.com.mitchhaley.fishjournal.R;
 import au.com.mitchhaley.fishjournal.activity.FishEntryActivity;
 import au.com.mitchhaley.fishjournal.contentprovider.FishEntryContentProvider;
@@ -50,9 +54,27 @@ public class FishTypeListFragment extends ListFragment implements LoaderManager.
 				mFishSpecies.setText("");
 			}
 		});
-		
+
+        if (getArguments() != null && getArguments().containsKey(FishEntryContentProvider.CONTENT_ITEM_TYPE)) {
+            fillData((Uri) getArguments().get(FishEntryContentProvider.CONTENT_ITEM_TYPE));
+        }
+
 		return view;
 	}
+
+    private void fillData(Uri uri) {
+        String[] projection = new String[] { FishEntryTable.COLUMN_SPECIES};
+
+        Cursor cursor = getActivity().getContentResolver().query(uri, projection, null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+
+            mFishSpecies.setText(cursor.getString(cursor.getColumnIndexOrThrow(FishEntryTable.COLUMN_SPECIES)));
+
+            // always close the cursor
+            cursor.close();
+        }
+    }
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {

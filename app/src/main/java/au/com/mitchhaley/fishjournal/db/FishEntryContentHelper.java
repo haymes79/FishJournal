@@ -31,8 +31,10 @@ public class FishEntryContentHelper {
 		String species = fishTypeFragment.getFishSpecies();
 		
 		long dateTime = fishDetailsFragment.getSelectedDateTime();
+        long tripId = fishDetailsFragment.getSelectedTripId();
 		
         ContentValues values = new ContentValues();
+        values.put(FishEntryTable.COLUMN_TRIP_KEY, tripId);
         values.put(FishEntryTable.COLUMN_CONDITIONS, condition);
         values.put(FishEntryTable.COLUMN_TEMPERATURE, temperature);
         

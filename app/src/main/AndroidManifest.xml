@@ -18,13 +18,32 @@
         </activity>
 
         <activity
+            android:name=".activity.TripEntryActivity"
+            android:label="Trip Entry" />
+
+
+        <activity
             android:name=".activity.FishListActivity"
             android:label="Fish Entries" />
+
+        <activity
+            android:name=".activity.TripListActivity"
+            android:label="Trip Entries" />
 
         <provider
             android:name=".contentprovider.FishEntryContentProvider"
             android:authorities="au.com.mitchhaley.fishentry.contentprovider" >
         </provider>
+
+        <provider
+            android:name=".contentprovider.TripEntryContentProvider"
+            android:authorities="au.com.mitchhaley.tripentry.contentprovider" >
+        </provider>
+
+        <meta-data
+            android:name="com.google.android.maps.v2.API_KEY"
+            android:value="AIzaSyBOmD945xsFqZtXnpJ1EEIJsFcj-2kOEw4"/>
+
     </application>
 
 

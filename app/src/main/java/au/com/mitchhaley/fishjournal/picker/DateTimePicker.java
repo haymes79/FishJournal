@@ -306,28 +306,6 @@ public class DateTimePicker implements View.OnClickListener {
         }
     }
 
-    /**
-     * @param date
-     *            date in String
-     * @param toFormat
-     *            format to which you want to convert your <b>date</b> eg: if
-     *            required format is 31 July 2011 then the toFormat should be
-     *            <b>d MMMM yyyy</b>
-     * @return formatted date
-     */
-    public static String convertDate(Date date,
-                                     String toFormat) {
-        try {
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(toFormat);
-            return simpleDateFormat.format(date);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return "";
-    }
-
     private String getMonthFullName(int monthNumber) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.MONTH, monthNumber);

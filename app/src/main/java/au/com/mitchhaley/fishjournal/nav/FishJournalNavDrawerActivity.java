@@ -2,7 +2,10 @@ package au.com.mitchhaley.fishjournal.nav;
 
 import android.content.Intent;
 import au.com.mitchhaley.fishjournal.R;
+import au.com.mitchhaley.fishjournal.activity.FishEntryActivity;
 import au.com.mitchhaley.fishjournal.activity.FishListActivity;
+import au.com.mitchhaley.fishjournal.activity.TripEntryActivity;
+import au.com.mitchhaley.fishjournal.activity.TripListActivity;
 
 public abstract class FishJournalNavDrawerActivity extends AbstractNavDrawerActivity {
 
@@ -31,24 +34,35 @@ public abstract class FishJournalNavDrawerActivity extends AbstractNavDrawerActi
                 new NavDrawerAdapter(this, R.layout.navdrawer_item, menu ));
         return navDrawerActivityConfiguration;
     }
-    
+
     @Override
     protected void onNavItemSelected(int id) {
+
+        Intent i;
         switch ((int)id) {
             case 100:
                 break;
             case 101:
+                i = new Intent(this, FishEntryActivity.class);
+                i.putExtra(NAV_DRAWER_POSITION, 1);
+                startActivity(i);
                 break;
             case 102:
-                Intent i = new Intent(this, FishListActivity.class);
+                i = new Intent(this, FishListActivity.class);
                 i.putExtra(NAV_DRAWER_POSITION, 1);
                 startActivity(i);
                 break;
             case 103:
                 break;
             case 104:
+                i = new Intent(this, TripEntryActivity.class);
+                i.putExtra(NAV_DRAWER_POSITION, 1);
+                startActivity(i);
                 break;
             case 105:
+                i = new Intent(this, TripListActivity.class);
+                i.putExtra(NAV_DRAWER_POSITION, 1);
+                startActivity(i);
                 break;
         }
     }

@@ -1,7 +1,8 @@
-package au.com.mitchhaley.fishjournal.fragment;
+    package au.com.mitchhaley.fishjournal.fragment;
 
 import android.app.ListFragment;
 import android.app.LoaderManager;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
@@ -14,31 +15,33 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
-
-import java.util.Date;
 
 import au.com.mitchhaley.fishjournal.R;
 import au.com.mitchhaley.fishjournal.activity.FishEntryActivity;
+import au.com.mitchhaley.fishjournal.adapter.SectionCursorAdapter;
 import au.com.mitchhaley.fishjournal.contentprovider.FishEntryContentProvider;
 import au.com.mitchhaley.fishjournal.db.FishEntryTable;
-import au.com.mitchhaley.fishjournal.picker.DateTimePicker;
+import au.com.mitchhaley.fishjournal.db.TripEntryTable;
+import au.com.mitchhaley.fishjournal.helper.DateTimeHelper;
 
-public class FishListFragment extends ListFragment implements
+    public class FishListFragment extends ListFragment implements
 		LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final int PLATFORM = 1;
 
 	private static final int DELETE_ID = Menu.FIRST + 1;
 	// private Cursor cursor;
-	private SimpleCursorAdapter adapter;
+	private ItemSectionAdapter adapter;
 
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		return inflater.inflate(R.layout.fishlist, container, false);
+		return inflater.inflate(R.layout.generallist, container, false);
 	}
 	
 	@Override
@@ -46,8 +49,12 @@ public class FishListFragment extends ListFragment implements
 		super.onActivityCreated(savedInstanceState);
 		
 		this.getListView().setDividerHeight(2);
-		fillData();
-		registerForContextMenu(getListView());
+        getLoaderManager().initLoader(0, null, this);
+
+        adapter =  new ItemSectionAdapter(getActivity(), null);
+        setListAdapter(adapter);
+
+        registerForContextMenu(getListView());
 	}
 	
 
@@ -59,7 +66,9 @@ public class FishListFragment extends ListFragment implements
 					.getMenuInfo();
 			Uri uri = Uri.parse(FishEntryContentProvider.FISHES_URI + "/" + info.id);
 			getActivity().getContentResolver().delete(uri, null, null);
-			fillData();
+
+			//fillData();
+
 			return true;
 		}
 		return super.onContextItemSelected(item);
@@ -70,44 +79,10 @@ public class FishListFragment extends ListFragment implements
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 		Intent i = new Intent(getActivity(), FishEntryActivity.class);
-		Uri todoUri = Uri.parse(FishEntryContentProvider.FISHES_URI + "/" + id);
-		i.putExtra(FishEntryContentProvider.CONTENT_ITEM_TYPE, todoUri);
+		Uri uri = Uri.parse(FishEntryContentProvider.FISHES_URI + "/" + id);
+		i.putExtra(FishEntryContentProvider.CONTENT_ITEM_TYPE, uri);
 
 		startActivity(i);
-	}
-
-	private void fillData() {
-
-		// Fields from the database (projection)
-		// Must include the _id column for the adapter to work
-		String[] from = new String[] { FishEntryTable.COLUMN_SPECIES,
-				FishEntryTable.COLUMN_SIZE, FishEntryTable.COLUMN_WEIGHT, FishEntryTable.COLUMN_DATETIME };
-		// Fields on the UI to which we map
-		int[] to = new int[] { R.id.label, R.id.sizeValue, R.id.weightValue, R.id.date};
-
-		getLoaderManager().initLoader(0, null, this);
-		adapter = new SimpleCursorAdapter(getActivity(), R.layout.fishlist_entry_row,
-				null, from, to, 0);
-
-        adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-
-            public boolean setViewValue(View aView, Cursor aCursor, int aColumnIndex) {
-
-                if (aColumnIndex == 4) {
-                    long dateTimeLong = aCursor.getLong(aColumnIndex);
-                    TextView textView = (TextView) aView;
-                    Date date = new Date();
-                    date.setTime(dateTimeLong);
-
-                    textView.setText(DateTimePicker.convertDate(date, "dd/MM/yyyy hh:mm"));
-                    return true;
-                }
-
-                return false;
-            }
-        });
-
-		setListAdapter(adapter);
 	}
 
 	// creates a new loader after the initLoader () call
@@ -115,9 +90,9 @@ public class FishListFragment extends ListFragment implements
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		String[] projection = { FishEntryTable.PRIMARY_KEY,
 				FishEntryTable.COLUMN_SPECIES, FishEntryTable.COLUMN_SIZE,
-				FishEntryTable.COLUMN_WEIGHT, FishEntryTable.COLUMN_DATETIME  };
+				FishEntryTable.COLUMN_WEIGHT, FishEntryTable.COLUMN_DATETIME, FishEntryTable.COLUMN_CONDITIONS, FishEntryTable.COLUMN_TEMPERATURE, TripEntryTable.COLUMN_TITLE};
 		CursorLoader cursorLoader = new CursorLoader(getActivity(),
-				FishEntryContentProvider.FISHES_URI, projection, null, null,null);
+				FishEntryContentProvider.FISHES_URI, projection, null, null,FishEntryTable.COLUMN_SPECIES + " desc");
 		return cursorLoader;
 	}
 
@@ -131,5 +106,54 @@ public class FishListFragment extends ListFragment implements
 		// data is not available anymore, delete reference
 		adapter.swapCursor(null);
 	}
+
+    private class ItemSectionAdapter extends SectionCursorAdapter {
+
+        public ItemSectionAdapter(Context context, Cursor c) {
+            super(context, c, android.R.layout.preference_category, PLATFORM);
+        }
+
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+
+            TextView speciesView =  (TextView) view.findViewById(R.id.label);
+            speciesView.setText(cursor.getString(cursor.getColumnIndex(FishEntryTable.COLUMN_SPECIES)));
+
+            TextView sizeView =  (TextView) view.findViewById(R.id.sizeValue);
+            sizeView.setText(cursor.getString(cursor.getColumnIndex(FishEntryTable.COLUMN_SIZE)));
+
+            TextView weightView =  (TextView) view.findViewById(R.id.weightValue);
+            weightView.setText(cursor.getString(cursor.getColumnIndex(FishEntryTable.COLUMN_WEIGHT)));
+
+            TextView dateTimeView =  (TextView) view.findViewById(R.id.dateValue);
+            long dateTimeValue = cursor.getLong(cursor.getColumnIndex(FishEntryTable.COLUMN_DATETIME));
+            dateTimeView.setText(DateTimeHelper.formatDate(dateTimeValue, DateTimeHelper.dateTimeDisplayFormat));
+
+            TextView temperatureView = (TextView) view.findViewById(R.id.temperatureValue);
+            temperatureView.setText(cursor.getString(cursor.getColumnIndex(FishEntryTable.COLUMN_TEMPERATURE)));
+
+            ImageView imageView = (ImageView) view.findViewById(R.id.conditionsValue);
+            String conditionValue = cursor.getString(cursor.getColumnIndex(FishEntryTable.COLUMN_CONDITIONS));
+
+            TextView tripView = (TextView) view.findViewById(R.id.labelTrip);
+            String tripTitle = cursor.getString(cursor.getColumnIndex(TripEntryTable.COLUMN_TITLE));
+
+            if (tripTitle != null && tripTitle.length() > 0) {
+                tripView.setText(" @ " + tripTitle);
+            }
+
+            for (int i=0; i < FishConditionsFragment.conditionValues.length; i++) {
+                if (FishConditionsFragment.conditionValues[i].equals(conditionValue)) {
+                    imageView.setImageResource(FishConditionsFragment.conditionImages[i]);
+                }
+            }
+
+        }
+
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            return getActivity().getLayoutInflater().inflate(R.layout.fishlist_entry_row, null);
+        }
+    }
 
 }
