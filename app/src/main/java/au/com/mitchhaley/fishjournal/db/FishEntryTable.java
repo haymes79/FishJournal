@@ -46,6 +46,13 @@ public class FishEntryTable {
     public static final String COLUMN_TIDE = "tide";
     public static final String FULL_COLUMN_TIDE = TABLE_FISH_ENTRY + "." + COLUMN_TIDE;
 
+    public static final String COLUMN_LONGITUDE = "longitude";
+    public static final String FULL_COLUMN_LONGITUDE = TABLE_FISH_ENTRY + "." + COLUMN_LONGITUDE;
+
+    public static final String COLUMN_LATITUDE = "latitude";
+    public static final String FULL_COLUMN_LATITUDE = TABLE_FISH_ENTRY + "." + COLUMN_LATITUDE;
+
+
     private static final String DATABASE_CREATE = "create table "
             + TABLE_FISH_ENTRY
             + " ("
@@ -59,6 +66,8 @@ public class FishEntryTable {
             + COLUMN_MOON  + " text, "
             + COLUMN_TIDE  + " text, "
             + COLUMN_DATETIME  + " integer, "
+            + COLUMN_LATITUDE  + " double, "
+            + COLUMN_LONGITUDE  + " double, "
             + COLUMN_TRIP_KEY  + " integer"
             + ");";
 
@@ -78,6 +87,8 @@ public class FishEntryTable {
         projectionMap.put(COLUMN_NOTES, FULL_COLUMN_NOTES);
         projectionMap.put(COLUMN_MOON, FULL_COLUMN_MOON);
         projectionMap.put(COLUMN_TIDE, FULL_COLUMN_TIDE);
+        projectionMap.put(COLUMN_LONGITUDE, FULL_COLUMN_LONGITUDE);
+        projectionMap.put(COLUMN_LATITUDE, FULL_COLUMN_LATITUDE);
         projectionMap.put(TripEntryTable.COLUMN_TITLE, TripEntryTable.TABLE_TRIP_ENTRY + "." + TripEntryTable.COLUMN_TITLE);
 //        projectionMap.put("trip_id", TripEntryTable.FULL_PRIMARY_KEY + " AS " + "trip_id");
 

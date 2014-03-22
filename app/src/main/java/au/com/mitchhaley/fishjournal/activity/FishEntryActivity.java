@@ -12,6 +12,7 @@ import au.com.mitchhaley.fishjournal.adapter.SectionFragmentPagerAdapter;
 import au.com.mitchhaley.fishjournal.db.FishEntryContentHelper;
 import au.com.mitchhaley.fishjournal.fragment.FishConditionsFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishDetailsFragment;
+import au.com.mitchhaley.fishjournal.fragment.FishLocationFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishTypeListFragment;
 import au.com.mitchhaley.fishjournal.nav.AbstractNavDrawerActivity;
 import au.com.mitchhaley.fishjournal.nav.FishJournalNavDrawerActivity;
@@ -32,6 +33,8 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
     private FishTypeListFragment fishTypeListFragment;
     
     private FishConditionsFragment fishConditionsFragment;
+
+    private FishLocationFragment fishLocationFragment;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +51,7 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
         mSectionsPagerAdapter.addSection("Details", FishDetailsFragment.class,extras);
         mSectionsPagerAdapter.addSection("Species", FishTypeListFragment.class, extras);
         mSectionsPagerAdapter.addSection("Conditions", FishConditionsFragment.class, extras);
+        mSectionsPagerAdapter.addSection("Location", FishLocationFragment.class, extras);
         
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -100,7 +104,15 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
 	public void setFishTypeListFragment(FishTypeListFragment fishTypeListFragment) {
 		this.fishTypeListFragment = fishTypeListFragment;
 	}
-	
+
+    public FishLocationFragment getFishLocationFragment() {
+        return fishLocationFragment;
+    }
+
+    public void setFishLocationFragment(FishLocationFragment fishLocationFragment) {
+        this.fishLocationFragment = fishLocationFragment;
+    }
+
     @Override
     protected NavDrawerActivityConfiguration getNavDrawerConfiguration() {
 

@@ -8,6 +8,7 @@ import au.com.mitchhaley.fishjournal.activity.FishEntryActivity;
 import au.com.mitchhaley.fishjournal.contentprovider.FishEntryContentProvider;
 import au.com.mitchhaley.fishjournal.fragment.FishConditionsFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishDetailsFragment;
+import au.com.mitchhaley.fishjournal.fragment.FishLocationFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishTypeListFragment;
 
 public class FishEntryContentHelper {
@@ -17,8 +18,14 @@ public class FishEntryContentHelper {
 		FishDetailsFragment fishDetailsFragment = activity.getFishDetailsFragment();
 		
 		FishConditionsFragment fishConditionsFragment = activity.getFishConditionsFragment();
+
+        FishLocationFragment fishLocationFragment = activity.getFishLocationFragment();
 		
 		FishTypeListFragment fishTypeFragment = activity.getFishTypeListFragment();
+
+        double longitude = fishLocationFragment.getLongitude();
+        double latitude = fishLocationFragment.getLatitude();
+
 		String temperature = fishConditionsFragment.getTemperature();
 		String condition = fishConditionsFragment.getCondition();
 
@@ -43,7 +50,10 @@ public class FishEntryContentHelper {
         values.put(FishEntryTable.COLUMN_SIZE, size);
         values.put(FishEntryTable.COLUMN_WEIGHT, weight);
         values.put(FishEntryTable.COLUMN_DATETIME, dateTime);
-        
+
+        values.put(FishEntryTable.COLUMN_LATITUDE, latitude);
+        values.put(FishEntryTable.COLUMN_LONGITUDE, longitude);
+
         return activity.getContentResolver().insert(FishEntryContentProvider.FISHES_URI, values);
 	}
 	
