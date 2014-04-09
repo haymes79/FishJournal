@@ -15,6 +15,7 @@ import au.com.mitchhaley.fishjournal.fragment.FishConditionsFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishDetailsFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishTypeListFragment;
 import au.com.mitchhaley.fishjournal.fragment.TripDetailsFragment;
+import au.com.mitchhaley.fishjournal.fragment.TripLocationFragment;
 import au.com.mitchhaley.fishjournal.nav.FishJournalNavDrawerActivity;
 import au.com.mitchhaley.fishjournal.nav.NavDrawerActivityConfiguration;
 import au.com.mitchhaley.fishjournal.nav.NavDrawerAdapter;
@@ -29,6 +30,7 @@ public class TripEntryActivity extends FishJournalNavDrawerActivity {
     private ViewPager mViewPager;
 
     private TripDetailsFragment tripDetailsFragment;
+    private TripLocationFragment tripLocationFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,11 +45,11 @@ public class TripEntryActivity extends FishJournalNavDrawerActivity {
         mSectionsPagerAdapter = new SectionFragmentPagerAdapter(getSupportFragmentManager(), getApplicationContext());
 
         mSectionsPagerAdapter.addSection("Details", TripDetailsFragment.class,extras);
+        mSectionsPagerAdapter.addSection("Location", TripLocationFragment.class,extras);
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
         PagerTitleStrip titleStrip = (PagerTitleStrip) findViewById(R.id.pager_title_strip);
-        titleStrip.setBackgroundColor(getResources().getColor(R.color.fishEntryBackground));
         mViewPager.setAdapter(mSectionsPagerAdapter);
     }
     
@@ -106,5 +108,13 @@ public class TripEntryActivity extends FishJournalNavDrawerActivity {
 
     public void setTripDetailsFragment(TripDetailsFragment tripDetailsFragment) {
         this.tripDetailsFragment = tripDetailsFragment;
+    }
+
+    public void setTripLocationFragment(TripLocationFragment tripLocationFragment) {
+        this.tripLocationFragment = tripLocationFragment;
+    }
+
+    public TripLocationFragment getTripLocationFragment() {
+        return tripLocationFragment;
     }
 }

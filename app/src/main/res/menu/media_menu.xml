@@ -1,0 +1,9 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/takePhoto"
+        android:title="Take Photo"
+        android:showAsAction="always">
+    </item>
+
+</menu>

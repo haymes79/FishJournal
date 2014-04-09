@@ -26,6 +26,7 @@ import au.com.mitchhaley.fishjournal.activity.TripEntryActivity;
 import au.com.mitchhaley.fishjournal.contentprovider.FishEntryContentProvider;
 import au.com.mitchhaley.fishjournal.contentprovider.TripEntryContentProvider;
 import au.com.mitchhaley.fishjournal.db.FishEntryTable;
+import au.com.mitchhaley.fishjournal.db.LocationEntryTable;
 import au.com.mitchhaley.fishjournal.db.TripEntryTable;
 import au.com.mitchhaley.fishjournal.helper.DateTimeHelper;
 import au.com.mitchhaley.fishjournal.picker.DateTimePicker;
@@ -74,8 +75,8 @@ public class TripListFragment extends ListFragment implements
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
         Intent i = new Intent(getActivity(), TripEntryActivity.class);
-        Uri todoUri = Uri.parse(TripEntryContentProvider.TRIPS_URI + "/" + id);
-        i.putExtra(TripEntryContentProvider.CONTENT_ITEM_TYPE, todoUri);
+        Uri uri = Uri.parse(TripEntryContentProvider.TRIPS_URI + "/" + id);
+        i.putExtra(TripEntryContentProvider.TRIP_CONTENT_ITEM_TYPE, uri);
 
         startActivity(i);
     }
@@ -84,9 +85,9 @@ public class TripListFragment extends ListFragment implements
 
         // Fields from the database (projection)
         // Must include the _id column for the adapter to work
-        String[] from = new String[] { TripEntryTable.COLUMN_TITLE, TripEntryTable.COLUMN_START_DATETIME, TripEntryTable.COLUMN_END_DATETIME };
+        String[] from = new String[] { TripEntryTable.COLUMN_TITLE, TripEntryTable.COLUMN_START_DATETIME, TripEntryTable.COLUMN_END_DATETIME, LocationEntryTable.COLUMN_LOCATION_TEXT};
         // Fields on the UI to which we map
-        int[] to = new int[] { R.id.label, R.id.startDateValue, R.id.endDateValue};
+        int[] to = new int[] { R.id.label, R.id.startDateValue, R.id.endDateValue, R.id.locationValue};
 
         getLoaderManager().initLoader(0, null, this);
         adapter = new SimpleCursorAdapter(getActivity(), R.layout.triplist_entry_row,
@@ -117,7 +118,7 @@ public class TripListFragment extends ListFragment implements
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String[] projection = { TripEntryTable.PRIMARY_KEY,
-                TripEntryTable.COLUMN_TITLE, TripEntryTable.COLUMN_START_DATETIME, TripEntryTable.COLUMN_END_DATETIME  };
+                TripEntryTable.COLUMN_TITLE, TripEntryTable.COLUMN_START_DATETIME, TripEntryTable.COLUMN_END_DATETIME, LocationEntryTable.COLUMN_LOCATION_TEXT  };
         CursorLoader cursorLoader = new CursorLoader(getActivity(),
                 TripEntryContentProvider.TRIPS_URI, projection, null, null,null);
         return cursorLoader;

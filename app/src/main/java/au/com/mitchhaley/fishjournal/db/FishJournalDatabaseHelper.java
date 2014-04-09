@@ -21,6 +21,7 @@ public class FishJournalDatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase database) {
         FishEntryTable.onCreate(database);
         TripEntryTable.onCreate(database);
+        LocationEntryTable.onCreate(database);
     }
 
     // Method is called during an upgrade of the database,
@@ -30,6 +31,7 @@ public class FishJournalDatabaseHelper extends SQLiteOpenHelper {
                           int newVersion) {
         FishEntryTable.onUpgrade(database, oldVersion, newVersion);
         TripEntryTable.onUpgrade(database, oldVersion, newVersion);
+        LocationEntryTable.onUpgrade(database, oldVersion, newVersion);
     }
 
 }

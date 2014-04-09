@@ -4,5 +4,13 @@
     <color name="fishListBackground">#669900</color>
     <color name="tripListBackground">#FF8800</color>
     <color name="tripEntryBackground">#CC0000</color>
+
+
+    <color name="actionBarBackground">#007BA7</color>
+    <!--<color name="pagerTitleBackground">#696969</color>-->
+
+    <color name="pagerTitleBackground">#007BA7</color>
+
+
 </resources>
 

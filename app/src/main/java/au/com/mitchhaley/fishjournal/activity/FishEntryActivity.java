@@ -7,6 +7,8 @@ import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
+
 import au.com.mitchhaley.fishjournal.R;
 import au.com.mitchhaley.fishjournal.adapter.SectionFragmentPagerAdapter;
 import au.com.mitchhaley.fishjournal.db.FishEntryContentHelper;
@@ -14,6 +16,7 @@ import au.com.mitchhaley.fishjournal.fragment.FishConditionsFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishDetailsFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishLocationFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishTypeListFragment;
+import au.com.mitchhaley.fishjournal.fragment.MediaFragment;
 import au.com.mitchhaley.fishjournal.nav.AbstractNavDrawerActivity;
 import au.com.mitchhaley.fishjournal.nav.FishJournalNavDrawerActivity;
 import au.com.mitchhaley.fishjournal.nav.NavDrawerActivityConfiguration;
@@ -51,12 +54,13 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
         mSectionsPagerAdapter.addSection("Details", FishDetailsFragment.class,extras);
         mSectionsPagerAdapter.addSection("Species", FishTypeListFragment.class, extras);
         mSectionsPagerAdapter.addSection("Conditions", FishConditionsFragment.class, extras);
+        mSectionsPagerAdapter.addSection("Media", MediaFragment.class, extras);
         mSectionsPagerAdapter.addSection("Location", FishLocationFragment.class, extras);
+
         
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
         PagerTitleStrip titleStrip = (PagerTitleStrip) findViewById(R.id.pager_title_strip);
-        titleStrip.setBackgroundColor(getResources().getColor(R.color.fishEntryBackground));
         mViewPager.setAdapter(mSectionsPagerAdapter);
     }
     
@@ -72,6 +76,9 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
       switch (item.getItemId()) {
       case R.id.save:
     	  FishEntryContentHelper.create(this);
+
+          Toast.makeText(this, "Fish Entry Created", Toast.LENGTH_LONG);
+
     	  return true;
       case R.id.delete:
     	  return true;
@@ -143,6 +150,6 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
 	}
 
 	   
-    
+
 
 }

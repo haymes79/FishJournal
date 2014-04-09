@@ -62,15 +62,6 @@ public class FishLocationFragment extends SupportMapFragment implements GPSTrack
 
         View view = super.onCreateView(inflater, container, savedInstanceState);
 
-        // inflat and return the layout
-//        View v = inflater.inflate(R.layout.map, container, false);
-//
-//        if (mapFragment == null) {
-//            FragmentManager myFM = getActivity().getSupportFragmentManager();
-//            mapFragment = (SupportMapFragment) myFM.findFragmentById(R.id.map);
-//            gMapView = mapFragment.getMap();
-//        }
-
         gMapView = this.getMap();
 
         if (getArguments() != null && getArguments().containsKey(FishEntryContentProvider.CONTENT_ITEM_TYPE)) {

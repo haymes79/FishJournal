@@ -60,8 +60,8 @@ public class TripDetailsFragment extends Fragment
         mStartDateEdit = ((EditText) view.findViewById(R.id.startDateEdit));
         mEndDateEdit = ((EditText) view.findViewById(R.id.endDateEdit));
 
-        if (getArguments() != null && getArguments().containsKey(TripEntryContentProvider.CONTENT_ITEM_TYPE)) {
-            fillData((Uri) getArguments().get(TripEntryContentProvider.CONTENT_ITEM_TYPE));
+        if (getArguments() != null && getArguments().containsKey(TripEntryContentProvider.TRIP_CONTENT_ITEM_TYPE)) {
+            fillData((Uri) getArguments().get(TripEntryContentProvider.TRIP_CONTENT_ITEM_TYPE));
         } else {
             startDate = new Date();
             mStartDateEdit.setText(DateTimeHelper.convertDate(startDate, DateTimeHelper.dateTimeDisplayFormat));

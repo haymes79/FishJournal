@@ -14,6 +14,7 @@ import java.util.HashSet;
 
 import au.com.mitchhaley.fishjournal.db.FishEntryTable;
 import au.com.mitchhaley.fishjournal.db.FishJournalDatabaseHelper;
+import au.com.mitchhaley.fishjournal.db.LocationEntryTable;
 import au.com.mitchhaley.fishjournal.db.TripEntryTable;
 
 /**
@@ -27,21 +28,28 @@ public class TripEntryContentProvider extends ContentProvider {
         // used for the UriMacher
         private static final int TRIPS = 10;
         private static final int TRIP_ID = 20;
+        private static final int LOCATIONS = 30;
+        private static final int LOCATION_ID = 40;
+
+        public static final String TRIP_CONTENT_ITEM_TYPE = "trip";
+        public static final String LOCATION_CONTENT_ITEM_TYPE = "location";
 
         private static final String AUTHORITY = "au.com.mitchhaley.tripentry.contentprovider";
 
-        private static final String BASE_PATH = "trip";
-        private static final String UNIQUE = "trip_unique";
-        public static final Uri TRIPS_URI = Uri.parse("content://" + AUTHORITY + "/" + BASE_PATH);
-
+        private static final String TRIP_BASE_PATH = "trip";
+        private static final String LOCATION_BASE_PATH = "location";
+        public static final Uri TRIPS_URI = Uri.parse("content://" + AUTHORITY + "/" + TRIP_BASE_PATH);
+        public static final Uri LOCATIONS_URI = Uri.parse("content://" + AUTHORITY + "/" + LOCATION_BASE_PATH);
 
         private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
-		public static final String CONTENT_ITEM_TYPE = "trip";
-
         static {
-            sURIMatcher.addURI(AUTHORITY, BASE_PATH, TRIPS);
-            sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", TRIP_ID);
+            sURIMatcher.addURI(AUTHORITY, TRIP_BASE_PATH, TRIPS);
+            sURIMatcher.addURI(AUTHORITY, TRIP_BASE_PATH + "/#", TRIP_ID);
+
+            sURIMatcher.addURI(AUTHORITY, LOCATION_BASE_PATH, LOCATIONS);
+            sURIMatcher.addURI(AUTHORITY, LOCATION_BASE_PATH + "/#", LOCATION_ID);
+
         }
 
         @Override
@@ -57,21 +65,28 @@ public class TripEntryContentProvider extends ContentProvider {
             // Uisng SQLiteQueryBuilder instead of query() method
             SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 
-            // check if the caller has requested a column which does not exists
-            checkColumns(projection);
-
-            // Set the table
-            queryBuilder.setTables(TripEntryTable.TABLE_TRIP_ENTRY);
-
             String groupBy = null;
             
             int uriType = sURIMatcher.match(uri);
             switch (uriType) {
                 case TRIPS:
+                    queryBuilder.setTables(TripEntryTable.TABLE_TRIP_ENTRY + " LEFT OUTER JOIN " + LocationEntryTable.TABLE_LOCATION_ENTRY + " ON " +
+                            TripEntryTable.FULL_COLUMN_LOCATION + " = " + LocationEntryTable.FULL_PRIMARY_KEY);
+                    queryBuilder.setProjectionMap(TripEntryTable.getProjectionMap());
                     break;
                 case TRIP_ID:
+                    queryBuilder.setTables(TripEntryTable.TABLE_TRIP_ENTRY);
                     // adding the ID to the original query
                     queryBuilder.appendWhere(TripEntryTable.PRIMARY_KEY + "="
+                            + uri.getLastPathSegment());
+                    break;
+                case LOCATIONS:
+                    queryBuilder.setTables(LocationEntryTable.TABLE_LOCATION_ENTRY);
+                    break;
+                case LOCATION_ID:
+                    queryBuilder.setTables(LocationEntryTable.TABLE_LOCATION_ENTRY);
+                    // adding the ID to the original query
+                    queryBuilder.appendWhere(LocationEntryTable.PRIMARY_KEY + "="
                             + uri.getLastPathSegment());
                     break;
                 default:
@@ -99,15 +114,23 @@ public class TripEntryContentProvider extends ContentProvider {
             SQLiteDatabase sqlDB = database.getWritableDatabase();
 
             long id = 0;
+            Uri returnUri;
             switch (uriType) {
                 case TRIPS:
                     id = sqlDB.insert(TripEntryTable.TABLE_TRIP_ENTRY, null, values);
+                    returnUri = Uri.parse(TRIP_BASE_PATH + "/" + id);
                     break;
+                case LOCATIONS:
+                    id = sqlDB.insert(LocationEntryTable.TABLE_LOCATION_ENTRY, null, values);
+                    returnUri = Uri.parse(LOCATION_BASE_PATH + "/" + id);
+                    break;
+
                 default:
                     throw new IllegalArgumentException("Unknown URI: " + uri);
             }
+
             getContext().getContentResolver().notifyChange(uri, null);
-            return Uri.parse(BASE_PATH + "/" + id);
+            return returnUri;
         }
 
         @Override

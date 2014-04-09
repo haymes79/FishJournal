@@ -1,5 +1,6 @@
 package au.com.mitchhaley.fishjournal.fragment;
 
+import android.app.ActionBar;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,15 +12,22 @@ import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
+
+import java.util.Date;
 
 import au.com.mitchhaley.fishjournal.R;
 import au.com.mitchhaley.fishjournal.contentprovider.FishEntryContentProvider;
 import au.com.mitchhaley.fishjournal.contentprovider.TripEntryContentProvider;
+import au.com.mitchhaley.fishjournal.db.LocationEntryTable;
 import au.com.mitchhaley.fishjournal.db.TripEntryTable;
+import au.com.mitchhaley.fishjournal.helper.DateTimeHelper;
+import au.com.mitchhaley.fishjournal.picker.DateTimePicker;
 
 /**
  * Created by mitch on 17/03/14.
@@ -46,6 +54,7 @@ public class TripListDialogFragment extends DialogFragment implements
 
         getDialog().setTitle("Trip Select");
 
+
         ListView listview = (ListView) view.findViewById(R.id.listView);
 
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -70,9 +79,9 @@ public class TripListDialogFragment extends DialogFragment implements
 
         // Fields from the database (projection)
         // Must include the _id column for the adapter to work
-        String[] from = new String[] { TripEntryTable.COLUMN_TITLE };
+        String[] from = new String[] { TripEntryTable.COLUMN_TITLE, TripEntryTable.COLUMN_START_DATETIME, TripEntryTable.COLUMN_END_DATETIME, LocationEntryTable.COLUMN_LOCATION_TEXT};
         // Fields on the UI to which we map
-        int[] to = new int[] { R.id.label};
+        int[] to = new int[] { R.id.label, R.id.startDateValue, R.id.endDateValue, R.id.locationValue};
 
         getLoaderManager().initLoader(0, null, this);
         adapter = new SimpleCursorAdapter(getActivity(), R.layout.triplist_entry_row,
@@ -82,15 +91,15 @@ public class TripListDialogFragment extends DialogFragment implements
 
             public boolean setViewValue(View aView, Cursor aCursor, int aColumnIndex) {
 
-//                if (aColumnIndex == 4) {
-//                    long dateTimeLong = aCursor.getLong(aColumnIndex);
-//                    TextView textView = (TextView) aView;
-//                    Date date = new Date();
-//                    date.setTime(dateTimeLong);
-//
-//                    textView.setText(DateTimePicker.convertDate(date, "dd/MM/yyyy hh:mm"));
-//                    return true;
-//                }
+                if (aColumnIndex == 2 || aColumnIndex == 3) {
+                    long dateTimeLong = aCursor.getLong(aColumnIndex);
+                    TextView textView = (TextView) aView;
+                    Date date = new Date();
+                    date.setTime(dateTimeLong);
+
+                    textView.setText(DateTimeHelper.convertDate(date, "dd/MM/yyyy"));
+                    return true;
+                }
 
                 return false;
             }
@@ -100,8 +109,7 @@ public class TripListDialogFragment extends DialogFragment implements
     // creates a new loader after the initLoader () call
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        String[] projection = { TripEntryTable.PRIMARY_KEY,
-                TripEntryTable.COLUMN_TITLE  };
+        String[] projection = { TripEntryTable.PRIMARY_KEY, TripEntryTable.COLUMN_TITLE, TripEntryTable.COLUMN_START_DATETIME, TripEntryTable.COLUMN_END_DATETIME, LocationEntryTable.COLUMN_LOCATION_TEXT  };
         CursorLoader cursorLoader = new CursorLoader(getActivity(),
                 TripEntryContentProvider.TRIPS_URI, projection, null, null,null);
         return cursorLoader;
