@@ -15,6 +15,7 @@ import java.util.HashSet;
 import au.com.mitchhaley.fishjournal.db.FishEntryTable;
 import au.com.mitchhaley.fishjournal.db.FishJournalDatabaseHelper;
 import au.com.mitchhaley.fishjournal.db.LocationEntryTable;
+import au.com.mitchhaley.fishjournal.db.MediaEntryTable;
 import au.com.mitchhaley.fishjournal.db.TripEntryTable;
 
 /**
@@ -28,8 +29,13 @@ public class TripEntryContentProvider extends ContentProvider {
         // used for the UriMacher
         private static final int TRIPS = 10;
         private static final int TRIP_ID = 20;
+
         private static final int LOCATIONS = 30;
         private static final int LOCATION_ID = 40;
+
+        private static final int MEDIAS = 50;
+        private static final int MEDIA_ID = 60;
+
 
         public static final String TRIP_CONTENT_ITEM_TYPE = "trip";
         public static final String LOCATION_CONTENT_ITEM_TYPE = "location";
@@ -37,8 +43,11 @@ public class TripEntryContentProvider extends ContentProvider {
         private static final String AUTHORITY = "au.com.mitchhaley.tripentry.contentprovider";
 
         private static final String TRIP_BASE_PATH = "trip";
+        private static final String MEDIA_BASE_PATH = "media";
         private static final String LOCATION_BASE_PATH = "location";
+
         public static final Uri TRIPS_URI = Uri.parse("content://" + AUTHORITY + "/" + TRIP_BASE_PATH);
+        public static final Uri MEDIAS_URI = Uri.parse("content://" + AUTHORITY + "/" + MEDIA_BASE_PATH);
         public static final Uri LOCATIONS_URI = Uri.parse("content://" + AUTHORITY + "/" + LOCATION_BASE_PATH);
 
         private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -49,6 +58,10 @@ public class TripEntryContentProvider extends ContentProvider {
 
             sURIMatcher.addURI(AUTHORITY, LOCATION_BASE_PATH, LOCATIONS);
             sURIMatcher.addURI(AUTHORITY, LOCATION_BASE_PATH + "/#", LOCATION_ID);
+
+            sURIMatcher.addURI(AUTHORITY, MEDIA_BASE_PATH, MEDIAS);
+            sURIMatcher.addURI(AUTHORITY, MEDIA_BASE_PATH + "/#", MEDIA_ID);
+
 
         }
 
@@ -89,6 +102,15 @@ public class TripEntryContentProvider extends ContentProvider {
                     queryBuilder.appendWhere(LocationEntryTable.PRIMARY_KEY + "="
                             + uri.getLastPathSegment());
                     break;
+                case MEDIAS:
+                    queryBuilder.setTables(MediaEntryTable.TABLE_MEDIA_ENTRY);
+                    break;
+                case MEDIA_ID:
+                    queryBuilder.setTables(MediaEntryTable.TABLE_MEDIA_ENTRY);
+                    // adding the ID to the original query
+                    queryBuilder.appendWhere(MediaEntryTable.PRIMARY_KEY + "="
+                            + uri.getLastPathSegment());
+                    break;
                 default:
                     throw new IllegalArgumentException("Unknown URI: " + uri);
             }
@@ -124,7 +146,10 @@ public class TripEntryContentProvider extends ContentProvider {
                     id = sqlDB.insert(LocationEntryTable.TABLE_LOCATION_ENTRY, null, values);
                     returnUri = Uri.parse(LOCATION_BASE_PATH + "/" + id);
                     break;
-
+                case MEDIAS:
+                    id = sqlDB.insert(MediaEntryTable.TABLE_MEDIA_ENTRY, null, values);
+                    returnUri = Uri.parse(MEDIA_BASE_PATH + "/" + id);
+                    break;
                 default:
                     throw new IllegalArgumentException("Unknown URI: " + uri);
             }

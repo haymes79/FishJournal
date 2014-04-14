@@ -7,14 +7,15 @@ import android.content.Context;
 import android.content.Intent;
 
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,52 +23,104 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.SimpleCursorAdapter;
+import android.widget.ProgressBar;
+
+
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.assist.ImageLoadingProgressListener;
+import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 import au.com.mitchhaley.fishjournal.R;
+import au.com.mitchhaley.fishjournal.activity.FishEntryActivity;
+import au.com.mitchhaley.fishjournal.adapter.ImageAdapter;
 import au.com.mitchhaley.fishjournal.contentprovider.FishEntryContentProvider;
+import au.com.mitchhaley.fishjournal.contentprovider.TripEntryContentProvider;
 import au.com.mitchhaley.fishjournal.db.FishEntryTable;
-import au.com.mitchhaley.fishjournal.db.LocationEntryTable;
+import au.com.mitchhaley.fishjournal.db.MediaEntryTable;
 import au.com.mitchhaley.fishjournal.db.TripEntryTable;
 
-public class MediaFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class MediaFragment extends Fragment {
 
     private static final int REQUEST_TAKE_PHOTO = 1;
 
-    private String mCurrentPhotoPath;
+//    private String mCurrentPhotoPath;
 
-    private Cursor cursor;
+    private List<String> newImages = new ArrayList<String>();
 
-    private int columnIndex;
+    private List<String> imagesToDisplay =  new ArrayList<String>();
+
+    private ImageAdapter mImageAdapter;
+
+    DisplayImageOptions options;
 
     private GridView mGridView;
 
     private static final String TAG = "MEDIA_FRAGMENT";
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        ((FishEntryActivity) getActivity()).setMediaFragment(this);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_media, container, false);
         setHasOptionsMenu(true);
 
+        imagesToDisplay = new ArrayList<String>();
+        if (getArguments() != null && getArguments().containsKey(FishEntryContentProvider.CONTENT_ITEM_TYPE)) {
+            fillData((Uri) getArguments().get(FishEntryContentProvider.CONTENT_ITEM_TYPE), FishEntryContentProvider.CONTENT_ITEM_TYPE);
+        }
+
         mGridView = (GridView) view.findViewById(R.id.imageGridView);
+
+        options = new DisplayImageOptions.Builder()
+                .showImageOnLoading(R.drawable.ic_stub)
+                .showImageForEmptyUri(R.drawable.ic_empty)
+                .showImageOnFail(R.drawable.ic_error)
+                .cacheInMemory(true)
+                .cacheOnDisc(true)
+                .considerExifParams(true)
+                .bitmapConfig(Bitmap.Config.RGB_565)
+                .build();
+
+        mImageAdapter = new ImageAdapter(getActivity(), ImageLoader.getInstance(), options, imagesToDisplay);
+        mGridView.setAdapter(mImageAdapter);
 
         return view;
     }
 
+    private File getStorageDirectory() {
+        File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+        if (!storageDir.canWrite()) {
+            Log.e(TAG, "Cannot write to directory: " + storageDir);
 
-        getLoaderManager().initLoader(0, null, this);
+            return null;
+        }
+
+        storageDir = new File(storageDir, "FISHJOURNAL");
+        if (!storageDir.exists()) {
+            storageDir.mkdir();
+        }
+
+        return storageDir;
     }
 
     @Override
@@ -78,50 +131,52 @@ public class MediaFragment extends Fragment implements LoaderManager.LoaderCallb
         super.onCreateOptionsMenu(menu,inflater);
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
             default:
-                dispatchTakePictureIntent();
+                File p = dispatchTakePictureIntent();
+
+                if (p != null) {
+                    String sFile = p.getAbsolutePath();
+
+                    sFile = "file:///" + sFile;
+                    mImageAdapter.addImageUri(sFile);
+                    mImageAdapter.notifyDataSetChanged();
+                }
                 return true;
         }
     }
 
+    private void fillData(Uri uri, String type) {
+        String[] projection = new String[] { MediaEntryTable.COLUMN_MEDIA_URI };
+        String[] values = new String[] {type, uri.getLastPathSegment()};
+
+        Cursor cursor = getActivity().getContentResolver().query(TripEntryContentProvider.MEDIAS_URI, projection, MediaEntryTable.COLUMN_RELATION_TYPE + " = ? and " + MediaEntryTable.COLUMN_MEDIA_FK + " = ?", values, null);
+        if (cursor != null) {
+
+            while (cursor.moveToNext()) {
+                imagesToDisplay.add(cursor.getString(cursor.getColumnIndexOrThrow(MediaEntryTable.COLUMN_MEDIA_URI)));
+            }
+        }
+    }
 
 
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
-//        File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
 
-        if (!storageDir.canWrite()) {
-            Log.e(TAG, "Cannot write to directory: " + storageDir);
-            throw new IOException("Cannot write to directory: " + storageDir);
-        }
-
-        storageDir = new File(storageDir, "FISHJOURNAL");
-        if (!storageDir.exists()) {
-            storageDir.mkdir();
-        }
-
-        File image = File.createTempFile(imageFileName, ".jpg", storageDir);
+        File image = File.createTempFile(imageFileName, ".jpg", getStorageDirectory());
 
         Log.d(TAG, "Create File: " + image.getAbsolutePath());
 
-        // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
         return image;
     }
 
-    private void dispatchTakePictureIntent() {
+    private File dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
@@ -130,87 +185,27 @@ public class MediaFragment extends Fragment implements LoaderManager.LoaderCallb
             try {
                 photoFile = createImageFile();
             } catch (IOException ex) {
-                // Error occurred while creating the File
+                return null;
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
-                        Uri.fromFile(photoFile));
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+
+                addNewPhoto(photoFile);
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+
+                return photoFile;
             }
         }
+
+        return null;
     }
 
-    // creates a new loader after the initLoader () call
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        String[] projection = {MediaStore.Images.Thumbnails._ID};
-        // Create the cursor pointing to the SDCard
-//        cursor = getActivity().managedQuery( MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI,
-//                projection, // Which columns to return
-//                null,       // Return all rows
-//                null,
-//                MediaStore.Images.Thumbnails.IMAGE_ID);
-
-
-        CursorLoader cursorLoader = new CursorLoader(getActivity(), MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, projection, null, null, MediaStore.Images.Thumbnails.IMAGE_ID);
-        return cursorLoader;
+    private void addNewPhoto(File f) {
+        newImages.add("file:///" + f.getAbsolutePath());
     }
 
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        this.cursor = data;
-
-        columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Thumbnails._ID);
-
-        mGridView.setAdapter(new ImageAdapter(getActivity()));
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-
-    }
-
-
-    /**
-     * Adapter for our image files.
-     */
-    private class ImageAdapter extends BaseAdapter {
-
-        private Context context;
-
-        public ImageAdapter(Context localContext) {
-            context = localContext;
-        }
-
-        public int getCount() {
-            return cursor.getCount();
-        }
-        public Object getItem(int position) {
-            return position;
-        }
-        public long getItemId(int position) {
-            return position;
-        }
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ImageView picturesView;
-            if (convertView == null) {
-                picturesView = new ImageView(context);
-                // Move cursor to current position
-                cursor.moveToPosition(position);
-                // Get the current value for the requested column
-                int imageID = cursor.getInt(columnIndex);
-                // Set the content of the image based on the provided URI
-                picturesView.setImageURI(Uri.withAppendedPath(
-                        MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, "" + imageID));
-                picturesView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                picturesView.setPadding(8, 8, 8, 8);
-                picturesView.setLayoutParams(new GridView.LayoutParams(400, 400));
-            }
-            else {
-                picturesView = (ImageView)convertView;
-            }
-            return picturesView;
-        }
+    public List<String> getNewImages() {
+        return newImages;
     }
 }

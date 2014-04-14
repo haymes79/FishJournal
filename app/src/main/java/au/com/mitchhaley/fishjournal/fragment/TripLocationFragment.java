@@ -53,7 +53,7 @@ public class TripLocationFragment  extends ListFragment implements LoaderManager
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         ((TripEntryActivity) getActivity()).setTripLocationFragment(this);
     }
 

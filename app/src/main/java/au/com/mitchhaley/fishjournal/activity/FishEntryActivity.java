@@ -1,6 +1,7 @@
 package au.com.mitchhaley.fishjournal.activity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.PagerTitleStrip;
 import android.support.v4.view.ViewPager;
@@ -11,7 +12,9 @@ import android.widget.Toast;
 
 import au.com.mitchhaley.fishjournal.R;
 import au.com.mitchhaley.fishjournal.adapter.SectionFragmentPagerAdapter;
+import au.com.mitchhaley.fishjournal.contentprovider.FishEntryContentProvider;
 import au.com.mitchhaley.fishjournal.db.FishEntryContentHelper;
+import au.com.mitchhaley.fishjournal.db.MediaEntryContentHelper;
 import au.com.mitchhaley.fishjournal.fragment.FishConditionsFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishDetailsFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishLocationFragment;
@@ -38,6 +41,8 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
     private FishConditionsFragment fishConditionsFragment;
 
     private FishLocationFragment fishLocationFragment;
+
+    private MediaFragment mediaFragment;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +80,11 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
       switch (item.getItemId()) {
       case R.id.save:
-    	  FishEntryContentHelper.create(this);
+    	  Uri uri = FishEntryContentHelper.create(this);
+
+          if (uri != null) {
+              MediaEntryContentHelper.create(this, getMediaFragment().getNewImages(), FishEntryContentProvider.CONTENT_ITEM_TYPE, Integer.parseInt(uri.getLastPathSegment()));
+          }
 
           Toast.makeText(this, "Fish Entry Created", Toast.LENGTH_LONG);
 
@@ -118,6 +127,14 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
 
     public void setFishLocationFragment(FishLocationFragment fishLocationFragment) {
         this.fishLocationFragment = fishLocationFragment;
+    }
+
+    public MediaFragment getMediaFragment() {
+        return mediaFragment;
+    }
+
+    public void setMediaFragment(MediaFragment mediaFragment) {
+        this.mediaFragment = mediaFragment;
     }
 
     @Override
