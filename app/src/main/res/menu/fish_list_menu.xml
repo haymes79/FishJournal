@@ -1,0 +1,15 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/groupBy"
+        android:title="Group By"
+        android:showAsAction="always">
+
+        <menu>
+            <item android:id="@+id/none"
+                android:title="None" />
+            <item android:id="@+id/fishType"
+                android:title="Fish Type" />
+            <item android:id="@+id/trip"
+                android:title="Trip" />
+        </menu>
+    </item>
+</menu>

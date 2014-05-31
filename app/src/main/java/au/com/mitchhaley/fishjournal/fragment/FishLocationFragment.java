@@ -46,6 +46,8 @@ public class FishLocationFragment extends SupportMapFragment implements GPSTrack
 
     private double latitude;
 
+    private boolean hasLocation = false;
+
     private SupportMapFragment mapFragment;
 
 
@@ -64,8 +66,8 @@ public class FishLocationFragment extends SupportMapFragment implements GPSTrack
 
         gMapView = this.getMap();
 
-        if (getArguments() != null && getArguments().containsKey(FishEntryContentProvider.CONTENT_ITEM_TYPE)) {
-            fillData((Uri) getArguments().get(FishEntryContentProvider.CONTENT_ITEM_TYPE));
+        if (((FishEntryActivity) getActivity()).getFishEntry() != null) {
+            fillData(((FishEntryActivity) getActivity()).getFishEntry());
             setLocationOnMap();
         } else {
             gpsTracker = new GPSTracker(getActivity(), this);
@@ -95,6 +97,8 @@ public class FishLocationFragment extends SupportMapFragment implements GPSTrack
             longitude = (cursor.getDouble(cursor.getColumnIndexOrThrow(FishEntryTable.COLUMN_LONGITUDE)));
             latitude = (cursor.getDouble(cursor.getColumnIndexOrThrow(FishEntryTable.COLUMN_LATITUDE)));
 
+            hasLocation = true;
+
             // always close the cursor
             cursor.close();
         }
@@ -117,6 +121,8 @@ public class FishLocationFragment extends SupportMapFragment implements GPSTrack
         this.latitude = latitude;
         this.longitude = longitude;
 
+        this.hasLocation = true;
+
         setLocationOnMap();
     }
 
@@ -126,5 +132,9 @@ public class FishLocationFragment extends SupportMapFragment implements GPSTrack
 
     public double getLatitude() {
         return latitude;
+    }
+
+    public boolean hasLocation() {
+        return hasLocation;
     }
 }

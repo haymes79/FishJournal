@@ -47,7 +47,13 @@ public class FishConditionsFragment extends Fragment
     
     private TextView mTemperatureSeekBarValue;
 
-    private SeekBar mSeekBar;
+    private TextView mWaterDepthTextValue;
+
+    private SeekBar mTemperatureSeekBar;
+
+    private TextView mWaterTemperatureSeekBarValue;
+
+    private SeekBar mWaterTemperatureSeekBar;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -60,15 +66,37 @@ public class FishConditionsFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fishentry_conditions, container, false);
 
-        mSeekBar = (SeekBar) view.findViewById(R.id.seekBarTemperature);
-        mSeekBar.setMax(70);
+        mTemperatureSeekBar = (SeekBar) view.findViewById(R.id.seekBarTemperature);
+        mTemperatureSeekBar.setMax(70);
         mTemperatureSeekBarValue = (TextView) view.findViewById(R.id.temperatureValue);
-        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+        mTemperatureSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress,
                                           boolean fromUser) {
             	mTemperatureSeekBarValue.setText(String.valueOf(progress - 20));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        mWaterTemperatureSeekBar = (SeekBar) view.findViewById(R.id.seekBarTemperature);
+        mWaterTemperatureSeekBar.setMax(70);
+        mWaterTemperatureSeekBarValue = (TextView) view.findViewById(R.id.temperatureValue);
+        mWaterTemperatureSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress,
+                                          boolean fromUser) {
+                mWaterTemperatureSeekBarValue.setText(String.valueOf(progress - 20));
             }
 
             @Override
@@ -95,15 +123,20 @@ public class FishConditionsFragment extends Fragment
         moonAdapter.setImages(moonImages);
         mMoonSpinner.setAdapter(moonAdapter);
 
-        if (getArguments() != null && getArguments().containsKey(FishEntryContentProvider.CONTENT_ITEM_TYPE)) {
-            fillData((Uri) getArguments().get(FishEntryContentProvider.CONTENT_ITEM_TYPE));
+        mWaterDepthTextValue = (TextView) view.findViewById(R.id.waterDepth);
+
+        if (((FishEntryActivity) getActivity()).getFishEntry() != null) {
+            fillData(((FishEntryActivity) getActivity()).getFishEntry());
+        } else {
+            mTemperatureSeekBar.setProgress(Integer.parseInt(mTemperatureSeekBarValue.getText().toString()) + 20);
+            mWaterTemperatureSeekBar.setProgress(Integer.parseInt(mWaterTemperatureSeekBarValue.getText().toString()) + 20);
         }
 
         return view;
     }
 
     private void fillData(Uri uri) {
-        String[] projection = new String[] { FishEntryTable.COLUMN_CONDITIONS, FishEntryTable.COLUMN_TEMPERATURE };
+        String[] projection = new String[] { FishEntryTable.COLUMN_CONDITIONS, FishEntryTable.COLUMN_TEMPERATURE, FishEntryTable.COLUMN_WATER_TEMPERATURE, FishEntryTable.COLUMN_MOON, FishEntryTable.COLUMN_MOON, FishEntryTable.COLUMN_WATER_DEPTH, FishEntryTable.COLUMN_TIDE };
 
         Cursor cursor = getActivity().getContentResolver().query(uri, projection, null, null, null);
         if (cursor != null) {
@@ -112,18 +145,30 @@ public class FishConditionsFragment extends Fragment
             String condition = cursor.getString(cursor.getColumnIndexOrThrow(FishEntryTable.COLUMN_CONDITIONS));
             mConditionSpinner.setSelection(Arrays.asList(conditionValues).indexOf(condition));
 
-            String temperature = cursor.getString(cursor.getColumnIndexOrThrow(FishEntryTable.COLUMN_TEMPERATURE));
-            mSeekBar.setProgress(Integer.parseInt(temperature) + 20);
+            String tide = cursor.getString(cursor.getColumnIndexOrThrow(FishEntryTable.COLUMN_TIDE));
+            mTideSpinner.setSelection(Arrays.asList(tideValues).indexOf(tide));
 
-            // always close the cursor
-            cursor.close();
+            String moon = cursor.getString(cursor.getColumnIndexOrThrow(FishEntryTable.COLUMN_MOON));
+            mMoonSpinner.setSelection(Arrays.asList(moonValues).indexOf(moon));
+
+            String temperature = cursor.getString(cursor.getColumnIndexOrThrow(FishEntryTable.COLUMN_TEMPERATURE));
+            mTemperatureSeekBar.setProgress(Integer.parseInt(temperature) + 20);
+
+            String waterTemperature = cursor.getString(cursor.getColumnIndexOrThrow(FishEntryTable.COLUMN_WATER_TEMPERATURE));
+            mWaterTemperatureSeekBar.setProgress(Integer.parseInt(temperature) + 20);
+
+            mWaterDepthTextValue.setText(cursor.getString(cursor.getColumnIndexOrThrow(FishEntryTable.COLUMN_WATER_DEPTH)));
         }
     }
     
     public String getCondition() {
     	return mConditionSpinner.getSelectedItem().toString();
     }
-    
+
+    public String getWaterTemperature() {
+        return mWaterTemperatureSeekBarValue.getText().toString();
+    }
+
     public String getTemperature() {
     	return mTemperatureSeekBarValue.getText().toString();
     }
@@ -134,5 +179,9 @@ public class FishConditionsFragment extends Fragment
 
     public String geTide() {
         return mTideSpinner.getSelectedItem().toString();
+    }
+
+    public String getWaterDepth() {
+        return mWaterDepthTextValue.getText().toString();
     }
 }

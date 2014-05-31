@@ -25,6 +25,12 @@ public class FishEntryTable {
     public static final String COLUMN_TEMPERATURE = "temperature";
     public static final String FULL_COLUMN_TEMPERATURE = TABLE_FISH_ENTRY + "." + COLUMN_TEMPERATURE;
 
+    public static final String COLUMN_WATER_TEMPERATURE = "water_temperature";
+    public static final String FULL_COLUMN_WATER_TEMPERATURE = TABLE_FISH_ENTRY + "." + COLUMN_WATER_TEMPERATURE;
+
+    public static final String COLUMN_WATER_DEPTH = "water_depth";
+    public static final String FULL_COLUMN_WATER_DEPTH = TABLE_FISH_ENTRY + "." + COLUMN_WATER_DEPTH;
+
     public static final String COLUMN_TRIP_KEY = "trip_id";
     public static final String FULL_COLUMN_TRIP_KEY = TABLE_FISH_ENTRY + "." + COLUMN_TRIP_KEY;
 
@@ -52,6 +58,8 @@ public class FishEntryTable {
     public static final String COLUMN_LATITUDE = "latitude";
     public static final String FULL_COLUMN_LATITUDE = TABLE_FISH_ENTRY + "." + COLUMN_LATITUDE;
 
+    public static final String COLUMN_ANGLER_KEY = "angler";
+    public static final String FULL_COLUMN_ANGLER_KEY = TABLE_FISH_ENTRY + "." + COLUMN_ANGLER_KEY;
 
     private static final String DATABASE_CREATE = "create table "
             + TABLE_FISH_ENTRY
@@ -60,6 +68,8 @@ public class FishEntryTable {
             + COLUMN_SPECIES + " text not null, "
             + COLUMN_CONDITIONS + " text, "
             + COLUMN_TEMPERATURE  + " text, "
+            + COLUMN_WATER_TEMPERATURE  + " text, "
+            + COLUMN_WATER_DEPTH  + " text, "
             + COLUMN_SIZE  + " text, "
             + COLUMN_WEIGHT  + " text, "
             + COLUMN_NOTES  + " text, "
@@ -68,7 +78,8 @@ public class FishEntryTable {
             + COLUMN_DATETIME  + " integer, "
             + COLUMN_LATITUDE  + " double, "
             + COLUMN_LONGITUDE  + " double, "
-            + COLUMN_TRIP_KEY  + " integer"
+            + COLUMN_TRIP_KEY  + " integer, "
+            + COLUMN_ANGLER_KEY  + " integer"
             + ");";
 
 
@@ -80,6 +91,8 @@ public class FishEntryTable {
         projectionMap.put(COLUMN_SPECIES, FULL_COLUMN_SPECIES);
         projectionMap.put(COLUMN_CONDITIONS, FULL_COLUMN_CONDITIONS);
         projectionMap.put(COLUMN_TEMPERATURE, FULL_COLUMN_TEMPERATURE);
+        projectionMap.put(COLUMN_WATER_TEMPERATURE, FULL_COLUMN_WATER_TEMPERATURE);
+        projectionMap.put(COLUMN_WATER_DEPTH, FULL_COLUMN_WATER_DEPTH);
         projectionMap.put(COLUMN_TRIP_KEY, FULL_COLUMN_TRIP_KEY);
         projectionMap.put(COLUMN_DATETIME, FULL_COLUMN_DATETIME);
         projectionMap.put(COLUMN_SIZE, FULL_COLUMN_SIZE);
@@ -89,6 +102,7 @@ public class FishEntryTable {
         projectionMap.put(COLUMN_TIDE, FULL_COLUMN_TIDE);
         projectionMap.put(COLUMN_LONGITUDE, FULL_COLUMN_LONGITUDE);
         projectionMap.put(COLUMN_LATITUDE, FULL_COLUMN_LATITUDE);
+        projectionMap.put(COLUMN_ANGLER_KEY, FULL_COLUMN_ANGLER_KEY);
         projectionMap.put(TripEntryTable.COLUMN_TITLE, TripEntryTable.TABLE_TRIP_ENTRY + "." + TripEntryTable.COLUMN_TITLE);
 //        projectionMap.put("trip_id", TripEntryTable.FULL_PRIMARY_KEY + " AS " + "trip_id");
 

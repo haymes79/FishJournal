@@ -30,11 +30,14 @@ import android.widget.Toast;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import au.com.mitchhaley.fishjournal.R;
 import au.com.mitchhaley.fishjournal.activity.FishEntryActivity;
+import au.com.mitchhaley.fishjournal.activity.TripEntryActivity;
 import au.com.mitchhaley.fishjournal.contentprovider.FishEntryContentProvider;
 import au.com.mitchhaley.fishjournal.contentprovider.TripEntryContentProvider;
+import au.com.mitchhaley.fishjournal.db.ContactEntryTable;
 import au.com.mitchhaley.fishjournal.db.FishEntryTable;
 import au.com.mitchhaley.fishjournal.db.TripEntryTable;
 import au.com.mitchhaley.fishjournal.helper.DateTimeHelper;
@@ -57,6 +60,7 @@ public class FishDetailsFragment extends Fragment implements TripListDialogFragm
 
     private long selectedTripId = -1;
 
+    private Spinner mAnglerSpinner;
 
     private EditText mTripEdit;
     
@@ -86,8 +90,10 @@ public class FishDetailsFragment extends Fragment implements TripListDialogFragm
             }
         });
 
-        if (getArguments() != null && getArguments().containsKey(FishEntryContentProvider.CONTENT_ITEM_TYPE)) {
-            fillData((Uri) getArguments().get(FishEntryContentProvider.CONTENT_ITEM_TYPE));
+        mAnglerSpinner = (Spinner) view.findViewById(R.id.anglerSpinner);
+
+        if (((FishEntryActivity) getActivity()).getFishEntry() != null) {
+            fillData(((FishEntryActivity) getActivity()).getFishEntry());
         } else {
             dateTime = new Date();
             mDateTime.setText(DateTimeHelper.convertDate(dateTime, DateTimeHelper.dateTimeDisplayFormat));
@@ -129,7 +135,7 @@ public class FishDetailsFragment extends Fragment implements TripListDialogFragm
     }
 
     private void fillData(Uri uri) {
-        String[] projection = new String[] { FishEntryTable.COLUMN_SIZE, FishEntryTable.COLUMN_WEIGHT, FishEntryTable.COLUMN_DATETIME, FishEntryTable.COLUMN_TRIP_KEY, TripEntryTable.COLUMN_TITLE };
+        String[] projection = new String[] { FishEntryTable.COLUMN_SIZE, FishEntryTable.COLUMN_WEIGHT, FishEntryTable.COLUMN_DATETIME, FishEntryTable.COLUMN_ANGLER_KEY, FishEntryTable.COLUMN_TRIP_KEY, TripEntryTable.COLUMN_TITLE };
 
         Cursor cursor = getActivity().getContentResolver().query(uri, projection, null, null, null);
         if (cursor != null) {
@@ -144,8 +150,11 @@ public class FishDetailsFragment extends Fragment implements TripListDialogFragm
 
             selectedTripId = cursor.getInt(cursor.getColumnIndexOrThrow(FishEntryTable.COLUMN_TRIP_KEY));
             mTripEdit.setText(cursor.getString(cursor.getColumnIndexOrThrow(TripEntryTable.COLUMN_TITLE)));
-            // always close the cursor
-            cursor.close();
+
+            long selectedAngler = cursor.getLong(cursor.getColumnIndexOrThrow(FishEntryTable.COLUMN_ANGLER_KEY));
+            populateSpinner(selectedAngler);
+
+
         }
     }
 
@@ -159,6 +168,10 @@ public class FishDetailsFragment extends Fragment implements TripListDialogFragm
 
     public long getSelectedDateTime() {
         return dateTime.getTime();
+    }
+
+    public long getSelectedAngler() {
+        return mAnglerSpinner.getSelectedItemId();
     }
 
     public long getSelectedTripId() {
@@ -176,7 +189,38 @@ public class FishDetailsFragment extends Fragment implements TripListDialogFragm
             mTripEdit.setText(cursor.getString(cursor.getColumnIndexOrThrow(TripEntryTable.COLUMN_TITLE)));
             selectedTripId = cursor.getInt(cursor.getColumnIndexOrThrow(TripEntryTable.PRIMARY_KEY));
 
-            cursor.close();
+            populateSpinner(-1);
         }
+    }
+
+    private void populateSpinner(long selectedValue) {
+
+        if (selectedTripId == -1) {
+            return;
+        }
+
+        Uri uri = Uri.parse(TripEntryContentProvider.TRIPS_URI + "/" + selectedTripId);
+
+        String[] projection = {ContactEntryTable.PRIMARY_KEY, ContactEntryTable.COLUMN_NAME_TEXT, ContactEntryTable.COLUMN_CONTACT_FK};
+        Cursor c = getActivity().getContentResolver().query(TripEntryContentProvider.CONTACTS_URI, projection, ContactEntryTable.COLUMN_TRIP_ID + " = " + selectedTripId, null, null);
+
+        String[] from = {ContactEntryTable.COLUMN_NAME_TEXT};
+        int[] to = new int[] { android.R.id.text1 };
+
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(getActivity(), android.R.layout.simple_spinner_item, c, from, to,0);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mAnglerSpinner.setAdapter(adapter);
+
+        if (selectedValue != -1) {
+            for(int i = 0; i < adapter.getCount(); i++)
+            {
+                if (adapter.getItemId(i) == selectedValue )
+                {
+                    this.mAnglerSpinner.setSelection(i);
+                    break;
+                }
+            }
+        }
+
     }
 }

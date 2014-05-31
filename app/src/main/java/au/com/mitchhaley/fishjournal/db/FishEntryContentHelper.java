@@ -4,6 +4,7 @@ import java.util.Calendar;
 
 import android.content.ContentValues;
 import android.net.Uri;
+
 import au.com.mitchhaley.fishjournal.activity.FishEntryActivity;
 import au.com.mitchhaley.fishjournal.contentprovider.FishEntryContentProvider;
 import au.com.mitchhaley.fishjournal.fragment.FishConditionsFragment;
@@ -13,48 +14,80 @@ import au.com.mitchhaley.fishjournal.fragment.FishTypeListFragment;
 
 public class FishEntryContentHelper {
 
-	public static Uri create(FishEntryActivity activity) {
+	public static int update(FishEntryActivity activity) {
 
-		FishDetailsFragment fishDetailsFragment = activity.getFishDetailsFragment();
-		
-		FishConditionsFragment fishConditionsFragment = activity.getFishConditionsFragment();
+        ContentValues values = populateContentValues(activity);
 
-        FishLocationFragment fishLocationFragment = activity.getFishLocationFragment();
-		
-		FishTypeListFragment fishTypeFragment = activity.getFishTypeListFragment();
+        return activity.getContentResolver().update(activity.getFishEntry(), values, null, null);
 
-        double longitude = fishLocationFragment.getLongitude();
-        double latitude = fishLocationFragment.getLatitude();
+	}
 
-		String temperature = fishConditionsFragment.getTemperature();
-		String condition = fishConditionsFragment.getCondition();
+    public static Uri create(FishEntryActivity activity) {
 
-		String weight = fishDetailsFragment.getWeight();
-		String size = fishDetailsFragment.getSize();
-
-        String tide = fishConditionsFragment.geTide();
-        String moon = fishConditionsFragment.getMoon();
-
-		String species = fishTypeFragment.getFishSpecies();
-		
-		long dateTime = fishDetailsFragment.getSelectedDateTime();
-        long tripId = fishDetailsFragment.getSelectedTripId();
-		
-        ContentValues values = new ContentValues();
-        values.put(FishEntryTable.COLUMN_TRIP_KEY, tripId);
-        values.put(FishEntryTable.COLUMN_CONDITIONS, condition);
-        values.put(FishEntryTable.COLUMN_TEMPERATURE, temperature);
-        
-        values.put(FishEntryTable.COLUMN_SPECIES, species);
-        
-        values.put(FishEntryTable.COLUMN_SIZE, size);
-        values.put(FishEntryTable.COLUMN_WEIGHT, weight);
-        values.put(FishEntryTable.COLUMN_DATETIME, dateTime);
-
-        values.put(FishEntryTable.COLUMN_LATITUDE, latitude);
-        values.put(FishEntryTable.COLUMN_LONGITUDE, longitude);
+        ContentValues values = populateContentValues(activity);
 
         return activity.getContentResolver().insert(FishEntryContentProvider.FISHES_URI, values);
-	}
-	
+    }
+
+    private static ContentValues populateContentValues(FishEntryActivity activity) {
+        FishDetailsFragment fishDetailsFragment = activity.getFishDetailsFragment();
+
+        FishConditionsFragment fishConditionsFragment = activity.getFishConditionsFragment();
+
+        FishLocationFragment fishLocationFragment = activity.getFishLocationFragment();
+
+        FishTypeListFragment fishTypeFragment = activity.getFishTypeListFragment();
+
+        ContentValues values = new ContentValues();
+
+        if (fishDetailsFragment != null) {
+            long tripId = fishDetailsFragment.getSelectedTripId();
+            values.put(FishEntryTable.COLUMN_TRIP_KEY, tripId);
+
+            String weight = fishDetailsFragment.getWeight();
+            values.put(FishEntryTable.COLUMN_WEIGHT, weight);
+
+            String size = fishDetailsFragment.getSize();
+            values.put(FishEntryTable.COLUMN_SIZE, size);
+
+            long dateTime = fishDetailsFragment.getSelectedDateTime();
+            values.put(FishEntryTable.COLUMN_DATETIME, dateTime);
+
+            long angler = fishDetailsFragment.getSelectedAngler();
+            values.put(FishEntryTable.COLUMN_ANGLER_KEY, angler);
+        }
+
+        if (fishConditionsFragment != null) {
+            String temperature = fishConditionsFragment.getTemperature();
+            values.put(FishEntryTable.COLUMN_TEMPERATURE, temperature);
+
+            String condition = fishConditionsFragment.getCondition();
+            values.put(FishEntryTable.COLUMN_CONDITIONS, condition);
+
+            String tide = fishConditionsFragment.geTide();
+            values.put(FishEntryTable.COLUMN_TIDE, tide);
+
+            String moon = fishConditionsFragment.getMoon();
+            values.put(FishEntryTable.COLUMN_MOON, moon);
+
+            String waterTemp = fishConditionsFragment.getWaterTemperature();
+            values.put(FishEntryTable.COLUMN_WATER_TEMPERATURE, waterTemp);
+
+            String waterDepth = fishConditionsFragment.getWaterDepth();
+            values.put(FishEntryTable.COLUMN_WATER_DEPTH, waterDepth);
+        }
+
+        if (fishTypeFragment != null) {
+            String species = fishTypeFragment.getFishSpecies();
+            values.put(FishEntryTable.COLUMN_SPECIES, species);
+        }
+
+        if (fishLocationFragment != null && fishLocationFragment.hasLocation()) {
+            values.put(FishEntryTable.COLUMN_LATITUDE, fishLocationFragment.getLatitude());
+            values.put(FishEntryTable.COLUMN_LONGITUDE, fishLocationFragment.getLongitude());
+        }
+
+        return  values;
+    }
+
 }

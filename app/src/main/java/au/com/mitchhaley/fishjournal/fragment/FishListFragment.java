@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,8 @@ import au.com.mitchhaley.fishjournal.R;
 import au.com.mitchhaley.fishjournal.activity.FishEntryActivity;
 import au.com.mitchhaley.fishjournal.adapter.SectionCursorAdapter;
 import au.com.mitchhaley.fishjournal.contentprovider.FishEntryContentProvider;
+import au.com.mitchhaley.fishjournal.contentprovider.TripEntryContentProvider;
+import au.com.mitchhaley.fishjournal.db.ContactEntryTable;
 import au.com.mitchhaley.fishjournal.db.FishEntryTable;
 import au.com.mitchhaley.fishjournal.db.TripEntryTable;
 import au.com.mitchhaley.fishjournal.helper.DateTimeHelper;
@@ -30,48 +33,80 @@ import au.com.mitchhaley.fishjournal.helper.DateTimeHelper;
     public class FishListFragment extends ListFragment implements
 		LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final int PLATFORM = 1;
+    private boolean sectionsEnabled = true;
 
-	private static final int DELETE_ID = Menu.FIRST + 1;
+    private static  final int FISH_PLATFORM = 1;
+    private static  final int TRIP_PLATFORM = 8;
+
+//	private static final int DELETE_ID = Menu.FIRST + 1;
+
+    private static final String GROUP_FISH = "Fish Type";
+    private static final String GROUP_TRIP = "Trip";
+    private static final String GROUP_NONE = "None";
+
+    private String sortField = FishEntryTable.COLUMN_DATETIME;
+
 	// private Cursor cursor;
 	private ItemSectionAdapter adapter;
 
-	
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-
+        setHasOptionsMenu(true);
 		return inflater.inflate(R.layout.generallist, container, false);
 	}
-	
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		
+
 		this.getListView().setDividerHeight(2);
         getLoaderManager().initLoader(0, null, this);
 
-        adapter =  new ItemSectionAdapter(getActivity(), null);
+        adapter =  new ItemSectionAdapter(getActivity(), null, FISH_PLATFORM, true);
         setListAdapter(adapter);
 
         registerForContextMenu(getListView());
 	}
+
+        @Override
+        public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+            menu.clear();
+            inflater.inflate(R.menu.fish_list_menu, menu);
+
+            super.onCreateOptionsMenu(menu,inflater);
+        }
 	
 
 	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case DELETE_ID:
-			AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
-					.getMenuInfo();
-			Uri uri = Uri.parse(FishEntryContentProvider.FISHES_URI + "/" + info.id);
-			getActivity().getContentResolver().delete(uri, null, null);
+	public boolean onOptionsItemSelected(MenuItem item) {
+        int platform;
+        boolean sectionsEnabled;
 
-			//fillData();
+        if (item.getTitle().equals(GROUP_FISH)) {
+            platform = this.FISH_PLATFORM;
+            sectionsEnabled = true;
+            sortField = FishEntryTable.COLUMN_SPECIES;
+        } else if (item.getTitle().equals(GROUP_TRIP)) {
+            platform = this.TRIP_PLATFORM;
+            sectionsEnabled = true;
+            sortField = TripEntryTable.COLUMN_TITLE;
+        } else if (item.getTitle().equals(GROUP_NONE)) {
+            platform = -1;
+            sectionsEnabled = false;
+            sortField = FishEntryTable.COLUMN_DATETIME;
 
-			return true;
-		}
-		return super.onContextItemSelected(item);
+        } else {
+            return super.onContextItemSelected(item);
+        }
+
+        adapter =  new ItemSectionAdapter(getActivity(), null, platform, sectionsEnabled);
+        getLoaderManager().restartLoader(0, null, this);
+        setListAdapter(adapter);
+        adapter.notifyDataSetChanged();
+
+        return true;
 	}
 
 	// Opens the second activity if an entry is clicked
@@ -90,9 +125,9 @@ import au.com.mitchhaley.fishjournal.helper.DateTimeHelper;
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		String[] projection = { FishEntryTable.PRIMARY_KEY,
 				FishEntryTable.COLUMN_SPECIES, FishEntryTable.COLUMN_SIZE,
-				FishEntryTable.COLUMN_WEIGHT, FishEntryTable.COLUMN_DATETIME, FishEntryTable.COLUMN_CONDITIONS, FishEntryTable.COLUMN_TEMPERATURE, TripEntryTable.COLUMN_TITLE};
+				FishEntryTable.COLUMN_WEIGHT, FishEntryTable.COLUMN_DATETIME, FishEntryTable.COLUMN_CONDITIONS, FishEntryTable.COLUMN_ANGLER_KEY, FishEntryTable.COLUMN_TEMPERATURE, TripEntryTable.COLUMN_TITLE};
 		CursorLoader cursorLoader = new CursorLoader(getActivity(),
-				FishEntryContentProvider.FISHES_URI, projection, null, null,FishEntryTable.COLUMN_SPECIES + " desc");
+				FishEntryContentProvider.FISHES_URI, projection, null, null, sortField + " desc");
 		return cursorLoader;
 	}
 
@@ -109,8 +144,8 @@ import au.com.mitchhaley.fishjournal.helper.DateTimeHelper;
 
     private class ItemSectionAdapter extends SectionCursorAdapter {
 
-        public ItemSectionAdapter(Context context, Cursor c) {
-            super(context, c, android.R.layout.preference_category, PLATFORM);
+        public ItemSectionAdapter(Context context, Cursor c, int platform, boolean sectionsEnabled) {
+            super(context, c, android.R.layout.preference_category, platform, sectionsEnabled);
         }
 
         @Override
@@ -140,12 +175,30 @@ import au.com.mitchhaley.fishjournal.helper.DateTimeHelper;
 
             if (tripTitle != null && tripTitle.length() > 0) {
                 tripView.setText(" @ " + tripTitle);
+            } else {
+                tripView.setText("");
             }
 
             for (int i=0; i < FishConditionsFragment.conditionValues.length; i++) {
                 if (FishConditionsFragment.conditionValues[i].equals(conditionValue)) {
                     imageView.setImageResource(FishConditionsFragment.conditionImages[i]);
                 }
+            }
+
+            long anglerId = cursor.getInt(cursor.getColumnIndex(FishEntryTable.COLUMN_ANGLER_KEY));
+            Uri uri = Uri.parse(TripEntryContentProvider.CONTACTS_URI + "/" + anglerId);
+
+            String[] projection = {ContactEntryTable.PRIMARY_KEY, ContactEntryTable.COLUMN_NAME_TEXT};
+            Cursor c = getActivity().getContentResolver().query(uri, projection, null, null, null);
+
+            TextView anglerView = (TextView) view.findViewById(R.id.anglerValue);
+            if (c.moveToFirst()) {
+                String name = c.getString(c.getColumnIndex(ContactEntryTable.COLUMN_NAME_TEXT));
+                anglerView.setText(name);
+                ((TextView) view.findViewById(R.id.anglerText)).setText("Angler: ");
+            } else {
+                anglerView.setText("");
+                ((TextView) view.findViewById(R.id.anglerText)).setText("");
             }
 
         }

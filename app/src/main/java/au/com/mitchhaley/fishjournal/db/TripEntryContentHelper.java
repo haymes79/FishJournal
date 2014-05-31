@@ -17,36 +17,18 @@ public class TripEntryContentHelper {
 
 	public static Uri create(TripEntryActivity activity) {
 
-        TripDetailsFragment tripDetails = activity.getTripDetailsFragment();
-
-        TripLocationFragment tripLocation = activity.getTripLocationFragment();
-
-        String title = tripDetails.getTitle();
-
-
-        long startDateTime = tripDetails.getSelectedStartDateTime();
-        long endDateTime = tripDetails.getSelectedEndDateTime();
-
-
-
-
-        ContentValues values = new ContentValues();
-        values.put(TripEntryTable.COLUMN_TITLE, title);
-
-        if (tripLocation.getLocationId() <= 0) {
-            Uri uri = createTripLocation(activity);
-            values.put(TripEntryTable.COLUMN_LOCATION, Integer.parseInt(uri.getLastPathSegment()));
-        } else {
-            values.put(TripEntryTable.COLUMN_LOCATION, tripLocation.getLocationId());
-        }
-
-
-        values.put(TripEntryTable.COLUMN_START_DATETIME, startDateTime);
-        values.put(TripEntryTable.COLUMN_END_DATETIME, endDateTime);
-
+        ContentValues values = populateContentValues(activity);
 
         return activity.getContentResolver().insert(TripEntryContentProvider.TRIPS_URI, values);
 	}
+
+    public static int update(TripEntryActivity activity) {
+
+        ContentValues values = populateContentValues(activity);
+
+        return activity.getContentResolver().update(activity.getTripEntry(), values, null, null);
+
+    }
 
     private static Uri createTripLocation(TripEntryActivity activity) {
         ContentValues values = new ContentValues();
@@ -59,6 +41,33 @@ public class TripEntryContentHelper {
 
         return activity.getContentResolver().insert(TripEntryContentProvider.LOCATIONS_URI, values);
 
+    }
+
+    private static ContentValues populateContentValues(TripEntryActivity activity) {
+        TripDetailsFragment tripDetails = activity.getTripDetailsFragment();
+
+        TripLocationFragment tripLocation = activity.getTripLocationFragment();
+
+        String title = tripDetails.getTitle();
+
+        long startDateTime = tripDetails.getSelectedStartDateTime();
+        long endDateTime = tripDetails.getSelectedEndDateTime();
+
+        ContentValues values = new ContentValues();
+        values.put(TripEntryTable.COLUMN_TITLE, title);
+
+        if (tripLocation.getLocationId() <= 0) {
+            Uri uri = createTripLocation(activity);
+            values.put(TripEntryTable.COLUMN_LOCATION, Integer.parseInt(uri.getLastPathSegment()));
+        } else {
+            values.put(TripEntryTable.COLUMN_LOCATION, tripLocation.getLocationId());
+        }
+
+        values.put(TripEntryTable.COLUMN_START_DATETIME, startDateTime);
+        values.put(TripEntryTable.COLUMN_END_DATETIME, endDateTime);
+
+
+        return values;
     }
 	
 }

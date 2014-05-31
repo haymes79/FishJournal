@@ -1,16 +1,24 @@
 package au.com.mitchhaley.fishjournal.activity;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.PagerTitleStrip;
 import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import au.com.mitchhaley.fishjournal.R;
 import au.com.mitchhaley.fishjournal.adapter.SectionFragmentPagerAdapter;
+import au.com.mitchhaley.fishjournal.contentprovider.FishEntryContentProvider;
+import au.com.mitchhaley.fishjournal.contentprovider.TripEntryContentProvider;
+import au.com.mitchhaley.fishjournal.db.ContactContentHelper;
 import au.com.mitchhaley.fishjournal.db.FishEntryContentHelper;
+import au.com.mitchhaley.fishjournal.db.MediaEntryContentHelper;
 import au.com.mitchhaley.fishjournal.db.TripEntryContentHelper;
+import au.com.mitchhaley.fishjournal.fragment.ContactsFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishConditionsFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishDetailsFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishTypeListFragment;
@@ -32,6 +40,10 @@ public class TripEntryActivity extends FishJournalNavDrawerActivity {
     private TripDetailsFragment tripDetailsFragment;
     private TripLocationFragment tripLocationFragment;
 
+    private ContactsFragment contactsFragment;
+
+    private Uri tripEntry;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,6 +51,8 @@ public class TripEntryActivity extends FishJournalNavDrawerActivity {
         Bundle extras = getIntent().getExtras();
         if (extras == null) {
             extras = new Bundle();
+        } else if (extras.containsKey(TripEntryContentProvider.TRIP_CONTENT_ITEM_TYPE)){
+            tripEntry =(Uri) extras.get(TripEntryContentProvider.TRIP_CONTENT_ITEM_TYPE);
         }
 
         // Create the adapter that will return a fragment for each of the sections of the app.
@@ -46,6 +60,8 @@ public class TripEntryActivity extends FishJournalNavDrawerActivity {
 
         mSectionsPagerAdapter.addSection("Details", TripDetailsFragment.class,extras);
         mSectionsPagerAdapter.addSection("Location", TripLocationFragment.class,extras);
+        mSectionsPagerAdapter.addSection("Anglers", ContactsFragment.class,extras);
+
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -64,7 +80,22 @@ public class TripEntryActivity extends FishJournalNavDrawerActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
       switch (item.getItemId()) {
       case R.id.save:
-    	  TripEntryContentHelper.create(this);
+          if (getTripEntry() == null) {
+              Uri uri = TripEntryContentHelper.create(this);
+
+              ContactContentHelper.create(this, getContactsFragment().getSelectedContacts(), uri.getLastPathSegment());
+              Toast.makeText(this, "Trip Entry Created", Toast.LENGTH_LONG).show();
+          } else {
+            int numRowsImpacted = TripEntryContentHelper.update(this);
+
+            Toast.makeText(this, "Fish Entry Updated", Toast.LENGTH_LONG).show();
+
+          }
+
+          Intent i = new Intent(this, TripListActivity.class);
+          i.putExtra(NAV_DRAWER_POSITION, 1);
+          startActivity(i);
+
     	  return true;
       case R.id.delete:
     	  return true;
@@ -114,7 +145,19 @@ public class TripEntryActivity extends FishJournalNavDrawerActivity {
         this.tripLocationFragment = tripLocationFragment;
     }
 
+    public Uri getTripEntry() {
+        return tripEntry;
+    }
+
     public TripLocationFragment getTripLocationFragment() {
         return tripLocationFragment;
+    }
+
+    public ContactsFragment getContactsFragment() {
+        return contactsFragment;
+    }
+
+    public void setContactsFragment(ContactsFragment contactsFragment) {
+        this.contactsFragment = contactsFragment;
     }
 }

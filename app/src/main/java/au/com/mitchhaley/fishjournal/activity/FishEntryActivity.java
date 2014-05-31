@@ -1,6 +1,7 @@
 package au.com.mitchhaley.fishjournal.activity;
 
 import android.content.Intent;
+
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.PagerTitleStrip;
@@ -43,6 +44,8 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
     private FishLocationFragment fishLocationFragment;
 
     private MediaFragment mediaFragment;
+
+    private Uri fishEntry;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +54,8 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
         Bundle extras = getIntent().getExtras();
         if (extras == null) {
             extras = new Bundle();
+        } else if (extras.containsKey(FishEntryContentProvider.CONTENT_ITEM_TYPE)){
+            fishEntry =(Uri) extras.get(FishEntryContentProvider.CONTENT_ITEM_TYPE);
         }
 
         // Create the adapter that will return a fragment for each of the sections of the app.
@@ -80,13 +85,27 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
       switch (item.getItemId()) {
       case R.id.save:
-    	  Uri uri = FishEntryContentHelper.create(this);
 
-          if (uri != null) {
-              MediaEntryContentHelper.create(this, getMediaFragment().getNewImages(), FishEntryContentProvider.CONTENT_ITEM_TYPE, Integer.parseInt(uri.getLastPathSegment()));
+          if (getFishEntry() == null) {
+              Uri uri = FishEntryContentHelper.create(this);
+
+              if (uri != null && getMediaFragment() != null) {
+                  MediaEntryContentHelper.create(this, getMediaFragment().getNewImages(), FishEntryContentProvider.CONTENT_ITEM_TYPE, Integer.parseInt(uri.getLastPathSegment()));
+              }
+
+              Toast.makeText(this, "Fish Entry Created", Toast.LENGTH_LONG).show();
+          } else {
+              int numRowsImpacted = FishEntryContentHelper.update(this);
+
+              if (fishEntry != null) {
+                  MediaEntryContentHelper.create(this, getMediaFragment().getNewImages(), FishEntryContentProvider.CONTENT_ITEM_TYPE, Integer.parseInt(fishEntry.getLastPathSegment()));
+              }
+
+              Toast.makeText(this, "Fish Entry Updated", Toast.LENGTH_LONG).show();
           }
-
-          Toast.makeText(this, "Fish Entry Created", Toast.LENGTH_LONG);
+          Intent i = new Intent(this, FishListActivity.class);
+          i.putExtra(NAV_DRAWER_POSITION, 1);
+          startActivity(i);
 
     	  return true;
       case R.id.delete:
@@ -166,7 +185,7 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
 		return R.layout.fishentry_main;
 	}
 
-	   
-
-
+    public Uri getFishEntry() {
+        return fishEntry;
+    }
 }

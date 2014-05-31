@@ -44,6 +44,9 @@ public abstract class SectionCursorAdapter extends CursorAdapter {
 
     private final int mHeaderRes;
     private final int mGroupColumn;
+
+    private final boolean mSectionsEnabled;
+
     private final LayoutInflater mLayoutInflater;
 
     private LinkedHashMap<Integer, String> sectionsIndexer;
@@ -53,7 +56,7 @@ public abstract class SectionCursorAdapter extends CursorAdapter {
     }
 
     public SectionCursorAdapter(Context context, Cursor c, int headerLayout,
-                                int groupColumn) {
+                                int groupColumn, boolean sectionsEnabled) {
         super(context, c, 0);
 
         sectionsIndexer = new LinkedHashMap<Integer, String>();
@@ -61,6 +64,7 @@ public abstract class SectionCursorAdapter extends CursorAdapter {
         mHeaderRes = headerLayout;
         mGroupColumn = groupColumn;
         mLayoutInflater = LayoutInflater.from(context);
+        mSectionsEnabled = sectionsEnabled;
 
         if (c != null) {
             calculateSectionHeaders();
@@ -91,6 +95,10 @@ public abstract class SectionCursorAdapter extends CursorAdapter {
     }
 
     private void calculateSectionHeaders() {
+        if (!mSectionsEnabled) {
+            return;
+        }
+
         int i = 0;
 
         String previous = "";
@@ -107,7 +115,11 @@ public abstract class SectionCursorAdapter extends CursorAdapter {
         c.moveToPosition(-1);
 
         while (c.moveToNext()) {
-            final String group = getCustomGroup(c.getString(mGroupColumn));
+            String group = getCustomGroup(c.getString(mGroupColumn));
+
+            if (group == null) {
+                group = "None";
+            }
 
             if (!previous.equals(group)) {
                 sectionsIndexer.put(i + count, group);
@@ -129,7 +141,10 @@ public abstract class SectionCursorAdapter extends CursorAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        int viewType = getItemViewType(position);
+        int viewType = TYPE_NORMAL;
+        if (mSectionsEnabled) {
+            viewType = getItemViewType(position);
+        }
 
         if (viewType == TYPE_NORMAL) {
             Cursor c = (Cursor) getItem(position);

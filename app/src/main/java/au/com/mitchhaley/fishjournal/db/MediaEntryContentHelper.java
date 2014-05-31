@@ -18,6 +18,10 @@ public class MediaEntryContentHelper {
 
 	public static void create(Context context, List<String> filesToAdd, String type, int foreignKey) {
 
+        if (filesToAdd == null) {
+            return;
+        }
+
         for (String file : filesToAdd) {
 
             ContentValues values = new ContentValues();

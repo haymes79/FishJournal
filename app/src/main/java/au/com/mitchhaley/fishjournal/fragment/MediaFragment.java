@@ -69,6 +69,8 @@ public class MediaFragment extends Fragment {
 
     private GridView mGridView;
 
+    private File photoFile;
+
     private static final String TAG = "MEDIA_FRAGMENT";
 
     @Override
@@ -137,15 +139,9 @@ public class MediaFragment extends Fragment {
         // Handle item selection
         switch (item.getItemId()) {
             default:
-                File p = dispatchTakePictureIntent();
+                dispatchTakePictureIntent();
 
-                if (p != null) {
-                    String sFile = p.getAbsolutePath();
 
-                    sFile = "file:///" + sFile;
-                    mImageAdapter.addImageUri(sFile);
-                    mImageAdapter.notifyDataSetChanged();
-                }
                 return true;
         }
     }
@@ -164,41 +160,96 @@ public class MediaFragment extends Fragment {
     }
 
 
-    private File createImageFile() throws IOException {
+    private File createImageFile() {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
 
-        File image = File.createTempFile(imageFileName, ".jpg", getStorageDirectory());
+        File image = new File(getStorageDirectory() + "/" + imageFileName + ".jpg");
 
         Log.d(TAG, "Create File: " + image.getAbsolutePath());
 
         return image;
     }
 
-    private File dispatchTakePictureIntent() {
+    private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
             // Create the File where the photo should go
-            File photoFile = null;
-            try {
-                photoFile = createImageFile();
-            } catch (IOException ex) {
-                return null;
-            }
-            // Continue only if the File was successfully created
-            if (photoFile != null) {
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
 
-                addNewPhoto(photoFile);
+//                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+        }
+    }
 
-                return photoFile;
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK) {
+
+            File existingFile = new File(getRealPathFromURI(getActivity(), data.getData()));
+            if (existingFile.exists()) {
+                File newFile = createImageFile();
+                if (existingFile.renameTo(newFile)) {
+                    addNewPhoto(newFile);
+
+                    String sFile = newFile.getAbsolutePath();
+
+                    sFile = "file:///" + sFile;
+                    mImageAdapter.addImageUri(sFile);
+                    mImageAdapter.notifyDataSetChanged();
+                }
+
+
             }
         }
+    }
 
-        return null;
+    public String getRealPathFromURI(Context context, Uri contentUri) {
+        Cursor cursor = null;
+        try {
+            String[] proj = { MediaStore.Images.Media.DATA };
+            cursor = context.getContentResolver().query(contentUri,  proj, null, null, null);
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+    private boolean moveLastPhotoTaken(File toFile) {
+
+        String[] projection = new String[] {
+                MediaStore.Images.ImageColumns._ID,
+                MediaStore.Images.ImageColumns.DATA,
+                MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
+                MediaStore.Images.ImageColumns.DATE_TAKEN,
+                MediaStore.Images.ImageColumns.MIME_TYPE };
+
+        final Cursor cursor = getActivity().getContentResolver().query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection,
+                null, null, MediaStore.Images.ImageColumns.DATE_TAKEN + "DESC");
+
+        if (cursor != null) {
+            cursor.moveToFirst();
+
+            int column_index_data =
+                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+
+            String image_path = cursor.getString(column_index_data);
+
+            File file = new File(image_path);
+            if (file.exists()) {
+                file.renameTo(toFile);
+                return true;
+            }
+        } 
+        return false;
     }
 
     private void addNewPhoto(File f) {
