@@ -10,6 +10,7 @@ import au.com.mitchhaley.fishjournal.contentprovider.FishEntryContentProvider;
 import au.com.mitchhaley.fishjournal.fragment.FishConditionsFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishDetailsFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishLocationFragment;
+import au.com.mitchhaley.fishjournal.fragment.FishSpeciesFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishTypeListFragment;
 
 public class FishEntryContentHelper {
@@ -36,7 +37,7 @@ public class FishEntryContentHelper {
 
         FishLocationFragment fishLocationFragment = activity.getFishLocationFragment();
 
-        FishTypeListFragment fishTypeFragment = activity.getFishTypeListFragment();
+        FishSpeciesFragment fishTypeFragment = activity.getFishSpeciesFragment();
 
         ContentValues values = new ContentValues();
 
@@ -78,7 +79,7 @@ public class FishEntryContentHelper {
         }
 
         if (fishTypeFragment != null) {
-            String species = fishTypeFragment.getFishSpecies();
+            int species = fishTypeFragment.getSpeciesId();
             values.put(FishEntryTable.COLUMN_SPECIES, species);
         }
 

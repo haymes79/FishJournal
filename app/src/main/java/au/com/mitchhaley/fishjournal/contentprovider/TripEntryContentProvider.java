@@ -17,6 +17,7 @@ import au.com.mitchhaley.fishjournal.db.FishEntryTable;
 import au.com.mitchhaley.fishjournal.db.FishJournalDatabaseHelper;
 import au.com.mitchhaley.fishjournal.db.LocationEntryTable;
 import au.com.mitchhaley.fishjournal.db.MediaEntryTable;
+import au.com.mitchhaley.fishjournal.db.SpeciesEntryTable;
 import au.com.mitchhaley.fishjournal.db.TripEntryTable;
 
 /**
@@ -40,11 +41,13 @@ public class TripEntryContentProvider extends ContentProvider {
         private static final int CONTACTS = 70;
         private static final int CONTACT_ID = 80;
 
-
+        private static final int SPECIES = 90;
+        private static final int SPECIES_ID = 100;
 
         public static final String TRIP_CONTENT_ITEM_TYPE = "trip";
         public static final String LOCATION_CONTENT_ITEM_TYPE = "location";
         public static final String CONTACT_CONTENT_ITEM_TYPE = "contact";
+        public static final String SPECIES_CONTENT_ITEM_TYPE = "species";
 
         private static final String AUTHORITY = "au.com.mitchhaley.tripentry.contentprovider";
 
@@ -52,11 +55,13 @@ public class TripEntryContentProvider extends ContentProvider {
         private static final String MEDIA_BASE_PATH = "media";
         private static final String LOCATION_BASE_PATH = "location";
         private static final String CONTACT_BASE_PATH = "contact";
+        private static final String SPECIES_BASE_PATH = "species";
 
         public static final Uri TRIPS_URI = Uri.parse("content://" + AUTHORITY + "/" + TRIP_BASE_PATH);
         public static final Uri MEDIAS_URI = Uri.parse("content://" + AUTHORITY + "/" + MEDIA_BASE_PATH);
         public static final Uri LOCATIONS_URI = Uri.parse("content://" + AUTHORITY + "/" + LOCATION_BASE_PATH);
         public static final Uri CONTACTS_URI = Uri.parse("content://" + AUTHORITY + "/" + CONTACT_BASE_PATH);
+        public static final Uri SPECIES_URI = Uri.parse("content://" + AUTHORITY + "/" + SPECIES_BASE_PATH);
 
         private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
@@ -72,6 +77,9 @@ public class TripEntryContentProvider extends ContentProvider {
 
             sURIMatcher.addURI(AUTHORITY, CONTACT_BASE_PATH, CONTACTS);
             sURIMatcher.addURI(AUTHORITY, CONTACT_BASE_PATH + "/#", CONTACT_ID);
+
+            sURIMatcher.addURI(AUTHORITY, SPECIES_BASE_PATH, SPECIES);
+            sURIMatcher.addURI(AUTHORITY, SPECIES_BASE_PATH + "/#", SPECIES_ID);
 
         }
 
@@ -131,6 +139,16 @@ public class TripEntryContentProvider extends ContentProvider {
                     queryBuilder.appendWhere(ContactEntryTable.PRIMARY_KEY + "="
                             + uri.getLastPathSegment());
                     break;
+                case SPECIES:
+                    queryBuilder.setTables(SpeciesEntryTable.TABLE_SPECIES_ENTRY);
+                    break;
+
+                case SPECIES_ID:
+                    queryBuilder.setTables(SpeciesEntryTable.TABLE_SPECIES_ENTRY);
+                    // adding the ID to the original query
+                    queryBuilder.appendWhere(SpeciesEntryTable.PRIMARY_KEY + "="
+                            + uri.getLastPathSegment());
+                    break;
                 default:
                     throw new IllegalArgumentException("Unknown URI: " + uri);
             }
@@ -160,19 +178,23 @@ public class TripEntryContentProvider extends ContentProvider {
             switch (uriType) {
                 case TRIPS:
                     id = sqlDB.insert(TripEntryTable.TABLE_TRIP_ENTRY, null, values);
-                    returnUri = Uri.parse(TRIP_BASE_PATH + "/" + id);
+                    returnUri = Uri.parse(TRIPS_URI + "/" + id);
                     break;
                 case LOCATIONS:
                     id = sqlDB.insert(LocationEntryTable.TABLE_LOCATION_ENTRY, null, values);
-                    returnUri = Uri.parse(LOCATION_BASE_PATH + "/" + id);
+                    returnUri = Uri.parse(LOCATIONS_URI + "/" + id);
                     break;
                 case MEDIAS:
                     id = sqlDB.insert(MediaEntryTable.TABLE_MEDIA_ENTRY, null, values);
-                    returnUri = Uri.parse(MEDIA_BASE_PATH + "/" + id);
+                    returnUri = Uri.parse(MEDIAS_URI + "/" + id);
                     break;
                 case CONTACTS:
                     id = sqlDB.insert(ContactEntryTable.TABLE_CONTACT_ENTRY, null, values);
-                    returnUri = Uri.parse(CONTACT_BASE_PATH + "/" + id);
+                    returnUri = Uri.parse(CONTACTS_URI + "/" + id);
+                    break;
+                case SPECIES:
+                    id = sqlDB.insert(SpeciesEntryTable.TABLE_SPECIES_ENTRY, null, values);
+                    returnUri = Uri.parse(SPECIES_URI + "/" + id);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown URI: " + uri);

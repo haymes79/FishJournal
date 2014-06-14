@@ -48,10 +48,9 @@ public abstract class AbstractNavDrawerActivity extends FragmentActivity {
         mDrawerList.setAdapter(navConf.getBaseAdapter());
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
-        
-        if (savedInstanceState != null && savedInstanceState.containsKey(NAV_DRAWER_POSITION)) {
-        	mDrawerList.setItemChecked(savedInstanceState.getInt(NAV_DRAWER_POSITION), true);
-        }
+
+        mDrawerList.setItemChecked(getNavDrawerPosition(), true);
+
         
 //        this.initDrawerShadow();
 
@@ -168,4 +167,6 @@ public abstract class AbstractNavDrawerActivity extends FragmentActivity {
         mTitle = title;
         getActionBar().setTitle(mTitle);
     }
+
+    public abstract int getNavDrawerPosition();
 }

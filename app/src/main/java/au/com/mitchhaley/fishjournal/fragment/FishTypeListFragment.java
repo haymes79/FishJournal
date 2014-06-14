@@ -4,6 +4,7 @@ package au.com.mitchhaley.fishjournal.fragment;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -22,7 +23,9 @@ import java.util.Arrays;
 import au.com.mitchhaley.fishjournal.R;
 import au.com.mitchhaley.fishjournal.activity.FishEntryActivity;
 import au.com.mitchhaley.fishjournal.contentprovider.FishEntryContentProvider;
+import au.com.mitchhaley.fishjournal.contentprovider.TripEntryContentProvider;
 import au.com.mitchhaley.fishjournal.db.FishEntryTable;
+import au.com.mitchhaley.fishjournal.db.SpeciesEntryTable;
 
 /**
  * Created by mitch on 18/10/13.
@@ -30,30 +33,22 @@ import au.com.mitchhaley.fishjournal.db.FishEntryTable;
 public class FishTypeListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	
 	private SimpleCursorAdapter adapter;
-	
-	private EditText mFishSpecies;
-	
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		
-        ((FishEntryActivity) getActivity()).setFishTypeListFragment(this);
-	}
+
+    public interface TextSpeciesSelectListener {
+        void onSpeciesSelected(int speciesId);
+    }
+
+    public static FishTypeListFragment newInstance(TextSpeciesSelectListener listener){
+        FishTypeListFragment f = new FishTypeListFragment();
+        f.setTargetFragment((Fragment) listener, 0);
+
+        return f;
+    }
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fishtype_list, container, false);
-
-		mFishSpecies = (EditText) view.findViewById(R.id.fishTypeEditText);
-		
-		mFishSpecies.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				mFishSpecies.setText("");
-			}
-		});
 
         if (getArguments() != null && getArguments().containsKey(FishEntryContentProvider.CONTENT_ITEM_TYPE)) {
             fillData((Uri) getArguments().get(FishEntryContentProvider.CONTENT_ITEM_TYPE));
@@ -63,13 +58,21 @@ public class FishTypeListFragment extends ListFragment implements LoaderManager.
 	}
 
     private void fillData(Uri uri) {
-        String[] projection = new String[] { FishEntryTable.COLUMN_SPECIES};
+        if (uri == null || uri.getLastPathSegment() == null) {
+            return;
+        }
 
+        String[] projection = new String[] { SpeciesEntryTable.COLUMN_SPECIES_COMMON_TEXT};
+
+        String fishSpeciesId = uri.getLastPathSegment();
+
+        Uri speciesUri = Uri.parse(TripEntryContentProvider.SPECIES_URI + "/" + fishSpeciesId);
         Cursor cursor = getActivity().getContentResolver().query(uri, projection, null, null, null);
         if (cursor != null) {
             cursor.moveToFirst();
 
-            mFishSpecies.setText(cursor.getString(cursor.getColumnIndexOrThrow(FishEntryTable.COLUMN_SPECIES)));
+//TODO: Select current value on list.
+//            mFishSpecies.setText(cursor.getString(cursor.getColumnIndexOrThrow(SpeciesEntryTable.COLUMN_SPECIES_COMMON_TEXT)));
 
             // always close the cursor
             cursor.close();
@@ -80,7 +83,7 @@ public class FishTypeListFragment extends ListFragment implements LoaderManager.
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		
-	    String[] from = new String[] { FishEntryTable.COLUMN_SPECIES };
+	    String[] from = new String[] { SpeciesEntryTable.COLUMN_SPECIES_COMMON_TEXT };
 	    // Fields on the UI to which we map
 	    int[] to = new int[] { R.id.fish_type_text };
 		
@@ -93,15 +96,18 @@ public class FishTypeListFragment extends ListFragment implements LoaderManager.
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		String selectedValue =  ((TextView)v.findViewById(R.id.fish_type_text)).getText().toString();
-		mFishSpecies.setText(selectedValue);
+
+        Fragment parentFragment = getTargetFragment();
+        ((TextSpeciesSelectListener) parentFragment).onSpeciesSelected((int) id);
+
 	}
 
 	// creates a new loader after the initLoader () call
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String[] projection = { FishEntryTable.PRIMARY_KEY,
-				FishEntryTable.COLUMN_SPECIES };
-		CursorLoader cursorLoader = new CursorLoader(getActivity(), FishEntryContentProvider.FISHES_UNIQUE_URI, projection, null, null, null);
+		String[] projection = { SpeciesEntryTable.PRIMARY_KEY,
+				SpeciesEntryTable.COLUMN_SPECIES_COMMON_TEXT };
+		CursorLoader cursorLoader = new CursorLoader(getActivity(), TripEntryContentProvider.SPECIES_URI, projection, null, null, null);
 		
 		return cursorLoader;
 	}
@@ -116,9 +122,4 @@ public class FishTypeListFragment extends ListFragment implements LoaderManager.
 		// data is not available anymore, delete reference
 		adapter.swapCursor(null);
 	}
-	
-	public String getFishSpecies() {
-		return mFishSpecies.getText().toString();
-	}
-
 }

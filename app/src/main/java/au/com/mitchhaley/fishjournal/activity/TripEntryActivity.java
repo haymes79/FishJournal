@@ -88,12 +88,10 @@ public class TripEntryActivity extends FishJournalNavDrawerActivity {
           } else {
             int numRowsImpacted = TripEntryContentHelper.update(this);
 
-            Toast.makeText(this, "Fish Entry Updated", Toast.LENGTH_LONG).show();
-
+            Toast.makeText(this, "Trip Entry Updated", Toast.LENGTH_LONG).show();
           }
 
           Intent i = new Intent(this, TripListActivity.class);
-          i.putExtra(NAV_DRAWER_POSITION, 1);
           startActivity(i);
 
     	  return true;

@@ -27,6 +27,7 @@ import au.com.mitchhaley.fishjournal.contentprovider.FishEntryContentProvider;
 import au.com.mitchhaley.fishjournal.contentprovider.TripEntryContentProvider;
 import au.com.mitchhaley.fishjournal.db.ContactEntryTable;
 import au.com.mitchhaley.fishjournal.db.FishEntryTable;
+import au.com.mitchhaley.fishjournal.db.SpeciesEntryTable;
 import au.com.mitchhaley.fishjournal.db.TripEntryTable;
 import au.com.mitchhaley.fishjournal.helper.DateTimeHelper;
 
@@ -87,7 +88,7 @@ import au.com.mitchhaley.fishjournal.helper.DateTimeHelper;
         if (item.getTitle().equals(GROUP_FISH)) {
             platform = this.FISH_PLATFORM;
             sectionsEnabled = true;
-            sortField = FishEntryTable.COLUMN_SPECIES;
+            sortField = SpeciesEntryTable.COLUMN_SPECIES_COMMON_TEXT;
         } else if (item.getTitle().equals(GROUP_TRIP)) {
             platform = this.TRIP_PLATFORM;
             sectionsEnabled = true;
@@ -124,7 +125,7 @@ import au.com.mitchhaley.fishjournal.helper.DateTimeHelper;
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		String[] projection = { FishEntryTable.PRIMARY_KEY,
-				FishEntryTable.COLUMN_SPECIES, FishEntryTable.COLUMN_SIZE,
+				SpeciesEntryTable.COLUMN_SPECIES_COMMON_TEXT, FishEntryTable.COLUMN_SIZE,
 				FishEntryTable.COLUMN_WEIGHT, FishEntryTable.COLUMN_DATETIME, FishEntryTable.COLUMN_CONDITIONS, FishEntryTable.COLUMN_ANGLER_KEY, FishEntryTable.COLUMN_TEMPERATURE, TripEntryTable.COLUMN_TITLE};
 		CursorLoader cursorLoader = new CursorLoader(getActivity(),
 				FishEntryContentProvider.FISHES_URI, projection, null, null, sortField + " desc");
@@ -152,7 +153,7 @@ import au.com.mitchhaley.fishjournal.helper.DateTimeHelper;
         public void bindView(View view, Context context, Cursor cursor) {
 
             TextView speciesView =  (TextView) view.findViewById(R.id.label);
-            speciesView.setText(cursor.getString(cursor.getColumnIndex(FishEntryTable.COLUMN_SPECIES)));
+            speciesView.setText(cursor.getString(cursor.getColumnIndex(SpeciesEntryTable.COLUMN_SPECIES_COMMON_TEXT)));
 
             TextView sizeView =  (TextView) view.findViewById(R.id.sizeValue);
             sizeView.setText(cursor.getString(cursor.getColumnIndex(FishEntryTable.COLUMN_SIZE)));

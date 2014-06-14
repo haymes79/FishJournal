@@ -16,7 +16,7 @@ public class FishEntryTable {
     public static final String PRIMARY_KEY = "_id";
     public static final String FULL_PRIMARY_KEY = TABLE_FISH_ENTRY + "." + PRIMARY_KEY;
 
-    public static final String COLUMN_SPECIES = "species";
+    public static final String COLUMN_SPECIES = "species_id";
     public static final String FULL_COLUMN_SPECIES = TABLE_FISH_ENTRY + "." + COLUMN_SPECIES;
 
     public static final String COLUMN_CONDITIONS = "conditions";
@@ -104,6 +104,7 @@ public class FishEntryTable {
         projectionMap.put(COLUMN_LATITUDE, FULL_COLUMN_LATITUDE);
         projectionMap.put(COLUMN_ANGLER_KEY, FULL_COLUMN_ANGLER_KEY);
         projectionMap.put(TripEntryTable.COLUMN_TITLE, TripEntryTable.TABLE_TRIP_ENTRY + "." + TripEntryTable.COLUMN_TITLE);
+        projectionMap.put(SpeciesEntryTable.COLUMN_SPECIES_COMMON_TEXT, SpeciesEntryTable.TABLE_SPECIES_ENTRY + "." + SpeciesEntryTable.COLUMN_SPECIES_COMMON_TEXT);
 //        projectionMap.put("trip_id", TripEntryTable.FULL_PRIMARY_KEY + " AS " + "trip_id");
 
         return projectionMap;

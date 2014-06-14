@@ -36,6 +36,22 @@ public abstract class FishJournalNavDrawerActivity extends AbstractNavDrawerActi
     }
 
     @Override
+    public int getNavDrawerPosition() {
+        if (this instanceof FishEntryActivity) {
+            return 1;
+        } else if (this instanceof FishListActivity) {
+            return 2;
+        } else if (this instanceof TripEntryActivity) {
+            return 3;
+        } else if (this instanceof TripListActivity) {
+            return 4;
+        } else {
+            return 0;
+        }
+
+    }
+
+    @Override
     protected void onNavItemSelected(int id) {
 
         Intent i;

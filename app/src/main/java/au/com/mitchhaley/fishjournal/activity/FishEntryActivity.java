@@ -19,6 +19,7 @@ import au.com.mitchhaley.fishjournal.db.MediaEntryContentHelper;
 import au.com.mitchhaley.fishjournal.fragment.FishConditionsFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishDetailsFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishLocationFragment;
+import au.com.mitchhaley.fishjournal.fragment.FishSpeciesFragment;
 import au.com.mitchhaley.fishjournal.fragment.FishTypeListFragment;
 import au.com.mitchhaley.fishjournal.fragment.MediaFragment;
 import au.com.mitchhaley.fishjournal.nav.AbstractNavDrawerActivity;
@@ -37,7 +38,7 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
 
     private FishDetailsFragment fishDetailsFragment;
     
-    private FishTypeListFragment fishTypeListFragment;
+    private FishSpeciesFragment fishSpeciesFragment;
     
     private FishConditionsFragment fishConditionsFragment;
 
@@ -62,7 +63,7 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
         mSectionsPagerAdapter = new SectionFragmentPagerAdapter(getSupportFragmentManager(), getApplicationContext());
 
         mSectionsPagerAdapter.addSection("Details", FishDetailsFragment.class,extras);
-        mSectionsPagerAdapter.addSection("Species", FishTypeListFragment.class, extras);
+        mSectionsPagerAdapter.addSection("Species", FishSpeciesFragment.class, extras);
         mSectionsPagerAdapter.addSection("Conditions", FishConditionsFragment.class, extras);
         mSectionsPagerAdapter.addSection("Media", MediaFragment.class, extras);
         mSectionsPagerAdapter.addSection("Location", FishLocationFragment.class, extras);
@@ -87,24 +88,19 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
       case R.id.save:
 
           if (getFishEntry() == null) {
-              Uri uri = FishEntryContentHelper.create(this);
-
-              if (uri != null && getMediaFragment() != null) {
-                  MediaEntryContentHelper.create(this, getMediaFragment().getNewImages(), FishEntryContentProvider.CONTENT_ITEM_TYPE, Integer.parseInt(uri.getLastPathSegment()));
-              }
-
+              fishEntry = FishEntryContentHelper.create(this);
               Toast.makeText(this, "Fish Entry Created", Toast.LENGTH_LONG).show();
           } else {
               int numRowsImpacted = FishEntryContentHelper.update(this);
-
-              if (fishEntry != null) {
-                  MediaEntryContentHelper.create(this, getMediaFragment().getNewImages(), FishEntryContentProvider.CONTENT_ITEM_TYPE, Integer.parseInt(fishEntry.getLastPathSegment()));
-              }
-
               Toast.makeText(this, "Fish Entry Updated", Toast.LENGTH_LONG).show();
           }
+
+          //Add new images.
+          if (fishEntry != null && getMediaFragment() != null) {
+              MediaEntryContentHelper.create(this, getMediaFragment().getNewImages(), FishEntryContentProvider.CONTENT_ITEM_TYPE, Integer.parseInt(fishEntry.getLastPathSegment()));
+          }
+
           Intent i = new Intent(this, FishListActivity.class);
-          i.putExtra(NAV_DRAWER_POSITION, 1);
           startActivity(i);
 
     	  return true;
@@ -132,12 +128,12 @@ public class FishEntryActivity extends FishJournalNavDrawerActivity {
 		return fishDetailsFragment;
 	}
 
-	public FishTypeListFragment getFishTypeListFragment() {
-		return fishTypeListFragment;
+	public FishSpeciesFragment getFishSpeciesFragment() {
+		return fishSpeciesFragment;
 	}
 
-	public void setFishTypeListFragment(FishTypeListFragment fishTypeListFragment) {
-		this.fishTypeListFragment = fishTypeListFragment;
+	public void setFishSpeciesFragment(FishSpeciesFragment fishSpeciesFragment) {
+		this.fishSpeciesFragment = fishSpeciesFragment;
 	}
 
     public FishLocationFragment getFishLocationFragment() {

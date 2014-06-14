@@ -5,38 +5,6 @@
     android:orientation="vertical"
     android:padding="10dp" >
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Enter New Species"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
-
-    <EditText
-        android:id="@+id/fishTypeEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" 
-        android:inputType="text"
-        android:textStyle="bold"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Enter fish species"/>
-
-    <View
-        style="@style/Divider"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="OR select from list below"
-        android:id="@+id/textView" />    
-    
-    <View
-        style="@style/Divider"
-        android:layout_marginTop="10dp"/>
-    
     <ListView
         android:id="@android:id/list"
         android:layout_width="match_parent"

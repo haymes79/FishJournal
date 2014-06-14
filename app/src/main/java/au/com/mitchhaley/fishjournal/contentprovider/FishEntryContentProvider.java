@@ -15,6 +15,7 @@ import java.util.HashSet;
 
 import au.com.mitchhaley.fishjournal.db.FishEntryTable;
 import au.com.mitchhaley.fishjournal.db.FishJournalDatabaseHelper;
+import au.com.mitchhaley.fishjournal.db.SpeciesEntryTable;
 import au.com.mitchhaley.fishjournal.db.TripEntryTable;
 
 /**
@@ -28,13 +29,13 @@ public class FishEntryContentProvider extends ContentProvider {
         // used for the UriMacher
         private static final int FISHES = 10;
         private static final int FISH_ID = 20;
-        private static final int FISHES_UNIQUE = 30;
+//        private static final int FISHES_UNIQUE = 30;
         
         private static final String AUTHORITY = "au.com.mitchhaley.fishentry.contentprovider";
 
         private static final String BASE_PATH = "fish";
-        private static final String UNIQUE = "fish_unique";
-        public static final Uri FISHES_UNIQUE_URI = Uri.parse("content://" + AUTHORITY + "/" + UNIQUE);
+//        private static final String UNIQUE = "fish_unique";
+//        public static final Uri FISHES_UNIQUE_URI = Uri.parse("content://" + AUTHORITY + "/" + UNIQUE);
         public static final Uri FISHES_URI = Uri.parse("content://" + AUTHORITY + "/" + BASE_PATH);
 
 //        public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/fish";
@@ -44,7 +45,7 @@ public class FishEntryContentProvider extends ContentProvider {
 		public static final String CONTENT_ITEM_TYPE = "fish";
         static {
             sURIMatcher.addURI(AUTHORITY, BASE_PATH, FISHES);
-            sURIMatcher.addURI(AUTHORITY, UNIQUE, FISHES_UNIQUE);
+//            sURIMatcher.addURI(AUTHORITY, UNIQUE, FISHES_UNIQUE);
             sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", FISH_ID);
         }
 
@@ -61,12 +62,9 @@ public class FishEntryContentProvider extends ContentProvider {
             // Uisng SQLiteQueryBuilder instead of query() method
             SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 
-            // check if the caller has requested a column which does not exists
-//            checkColumns(projection);
-
             // Set the table
             queryBuilder.setTables(FishEntryTable.TABLE_FISH_ENTRY + " LEFT OUTER JOIN " + TripEntryTable.TABLE_TRIP_ENTRY + " ON " +
-                    FishEntryTable.FULL_COLUMN_TRIP_KEY + " = " + TripEntryTable.FULL_PRIMARY_KEY);
+                    FishEntryTable.FULL_COLUMN_TRIP_KEY + " = " + TripEntryTable.FULL_PRIMARY_KEY + " INNER JOIN " + SpeciesEntryTable.TABLE_SPECIES_ENTRY + " ON " + FishEntryTable.COLUMN_SPECIES + " = " + SpeciesEntryTable.FULL_PRIMARY_KEY);
 
             queryBuilder.setProjectionMap(FishEntryTable.getProjectionMap());
 
@@ -76,9 +74,9 @@ public class FishEntryContentProvider extends ContentProvider {
             switch (uriType) {
                 case FISHES:
                     break;
-                case FISHES_UNIQUE:
-                	groupBy = FishEntryTable.COLUMN_SPECIES;
-                	break;
+//                case FISHES_UNIQUE:
+//                	groupBy = FishEntryTable.COLUMN_SPECIES;
+//                	break;
                 case FISH_ID:
                     // adding the ID to the original query
                     queryBuilder.appendWhere(FishEntryTable.FULL_PRIMARY_KEY + "="
@@ -117,7 +115,7 @@ public class FishEntryContentProvider extends ContentProvider {
                     throw new IllegalArgumentException("Unknown URI: " + uri);
             }
             getContext().getContentResolver().notifyChange(uri, null);
-            return Uri.parse(BASE_PATH + "/" + id);
+            return Uri.parse(FISHES_URI + "/" + id);
         }
 
         @Override
@@ -180,19 +178,4 @@ public class FishEntryContentProvider extends ContentProvider {
             getContext().getContentResolver().notifyChange(uri, null);
             return rowsUpdated;
         }
-
-        private void checkColumns(String[] projection) {
-            String[] available = { FishEntryTable.PRIMARY_KEY, FishEntryTable.COLUMN_SIZE, FishEntryTable.COLUMN_CONDITIONS,
-                    FishEntryTable.COLUMN_NOTES, FishEntryTable.COLUMN_SPECIES, FishEntryTable.COLUMN_TEMPERATURE,
-                    FishEntryTable.COLUMN_WEIGHT, FishEntryTable.COLUMN_DATETIME};
-            if (projection != null) {
-                HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
-                HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));
-                // check if all columns which are requested are available
-                if (!availableColumns.containsAll(requestedColumns)) {
-                    throw new IllegalArgumentException("Unknown columns in projection");
-                }
-            }
-        }
-
     }
